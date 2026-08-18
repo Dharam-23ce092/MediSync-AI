@@ -1,0 +1,100 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.base-detail-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+/* Grid columns classes */
+.cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.detail-item-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.detail-item-wrapper:hover {
+  border-color: var(--color-border-hover);
+  background-color: var(--color-bg-surface-hover);
+}
+
+.detail-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+}
+
+/* Badge values */
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.badge-primary { background-color: var(--color-primary-glow); color: var(--color-primary); }
+.badge-secondary { background-color: #f1f5f9; color: #475569; }
+.badge-success { background-color: var(--color-normal-light); color: var(--color-normal); }
+.badge-danger { background-color: var(--color-critical-light); color: var(--color-critical); }
+.badge-warning { background-color: var(--color-urgent-light); color: var(--color-urgent); }
+
+/* Vitals Type styling */
+.detail-vital {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+.vital-alert {
+  color: var(--color-critical);
+  animation: pulse-soft 2s infinite ease-in-out;
+}
+.vital-warning {
+  color: var(--color-urgent);
+}
+.vital-normal {
+  color: var(--color-normal);
+}
+
+/* List Type styling */
+.detail-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.list-item-pill {
+  font-size: 11px;
+  background-color: #e2e8f0;
+  color: #334155;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+}

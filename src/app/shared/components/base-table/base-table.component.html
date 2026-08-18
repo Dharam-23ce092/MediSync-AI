@@ -1,0 +1,165 @@
+<div class="base-table-container">
+  <!-- Search Header -->
+  <div class="table-search-bar" *ngIf="showSearch">
+    <div class="search-input-wrapper">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        [placeholder]="searchPlaceholder"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        class="search-input"
+        appTooltip="Search current list"
+        tooltipPosition="right"
+      />
+    </div>
+  </div>
+
+  <!-- Scrollable Table Wrapper -->
+  <div class="table-scroll-wrapper">
+    <table class="medisync-table">
+      <thead>
+        <tr>
+          <th
+            *ngFor="let col of columns"
+            [style.width]="col.width"
+            [ngClass]="'text-' + (col.align || 'left')"
+          >
+            {{ col.header }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Loading State -->
+        <ng-container *ngIf="loading">
+          <tr *ngFor="let tempRow of [1, 2, 3, 4, 5]">
+            <td *ngFor="let col of columns">
+              <div class="skeleton-loader-cell skeleton"></div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- Data Rows -->
+        <ng-container *ngIf="!loading && data.length > 0">
+          <tr *ngFor="let row of data" (click)="onRowClick(row)" [class.clickable]="rowClick.observed">
+            <td
+              *ngFor="let col of columns"
+              [ngClass]="'text-' + (col.align || 'left')"
+            >
+              <!-- Avatar Cell -->
+              <div class="avatar-cell" *ngIf="col.type === 'avatar'">
+                <div class="avatar-circle">
+                  {{ getInitials(row[col.key]) }}
+                </div>
+                <div class="avatar-info">
+                  <span class="avatar-name">{{ row[col.key] }}</span>
+                  <span class="avatar-subtitle" *ngIf="row[col.key + '_subtitle']">{{ row[col.key + '_subtitle'] }}</span>
+                </div>
+              </div>
+
+              <!-- Date Cell -->
+              <span *ngIf="col.type === 'date'">
+                {{ row[col.key] | date:'mediumDate' }}
+              </span>
+
+              <!-- Currency Cell -->
+              <span class="currency-cell" *ngIf="col.type === 'currency'">
+                ₹{{ row[col.key] | number:'1.2-2' }}
+              </span>
+
+              <!-- Badge Cell -->
+              <span
+                *ngIf="col.type === 'badge'"
+                class="status-pill"
+                [ngClass]="col.badgeMap?.[row[col.key]]?.class || 'pill-secondary'"
+              >
+                {{ col.badgeMap?.[row[col.key]]?.label || row[col.key] }}
+              </span>
+
+              <!-- Actions Cell -->
+              <div class="actions-cell" *ngIf="col.type === 'actions'">
+                <button
+                  *ngFor="let act of col.actions"
+                  [class]="'action-btn ' + (act.class || '')"
+                  [appTooltip]="act.tooltip || act.label"
+                  tooltipPosition="top"
+                  (click)="onAction(act.action, row, $event)"
+                >
+                  <span *ngIf="act.icon" class="action-icon" [innerHTML]="act.icon"></span>
+                  <span *ngIf="!act.icon">{{ act.label }}</span>
+                </button>
+              </div>
+
+              <!-- Standard Text Cell -->
+              <span *ngIf="!col.type || col.type === 'text'">
+                {{ row[col.key] }}
+              </span>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- Empty State -->
+        <tr *ngIf="!loading && data.length === 0">
+          <td [attr.colspan]="columns.length" class="empty-state-row">
+            <div class="empty-state-content">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <p>{{ emptyMessage }}</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Table Pagination Footer -->
+  <div class="table-pagination-footer" *ngIf="showPagination && totalItems > pageSize">
+    <div class="pagination-info">
+      Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to
+      <strong>{{ Math.min(currentPage * pageSize, totalItems) }}</strong> of
+      <strong>{{ totalItems }}</strong> entries
+    </div>
+    <div class="pagination-buttons">
+      <!-- Prev Button -->
+      <button
+        class="pagination-btn"
+        [disabled]="currentPage === 1"
+        (click)="onPageChange(currentPage - 1)"
+        appTooltip="Previous page"
+        tooltipPosition="top"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <!-- Pages list -->
+      <button
+        *ngFor="let page of pages"
+        class="pagination-btn page-num-btn"
+        [class.active]="page === currentPage"
+        (click)="onPageChange(page)"
+      >
+        {{ page }}
+      </button>
+
+      <!-- Next Button -->
+      <button
+        class="pagination-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="onPageChange(currentPage + 1)"
+        appTooltip="Next page"
+        tooltipPosition="top"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="base-detail-grid" [ngClass]="gridClass">
+  <div
+    *ngFor="let item of items"
+    class="detail-item-wrapper"
+    [class]="item.class || ''"
+    [appTooltip]="item.tooltip || ''"
+    tooltipPosition="top"
+  >
+    <div class="detail-label">{{ item.label }}</div>
+    <div class="detail-value">
+      <!-- Badge Type -->
+      <span
+        *ngIf="item.type === 'badge'"
+        class="detail-badge"
+        [class]="item.badgeClass || 'badge-secondary'"
+      >
+        {{ item.value }}
+      </span>
+
+      <!-- Vitals Type -->
+      <span
+        *ngIf="item.type === 'vitals'"
+        class="detail-vital"
+        [class]="item.badgeClass || ''"
+      >
+        {{ item.value }}
+      </span>
+
+      <!-- Array / List Type -->
+      <div *ngIf="item.type === 'list' || isArray(item.value)" class="detail-list">
+        <span *ngFor="let subItem of item.value" class="list-item-pill">
+          {{ subItem }}
+        </span>
+      </div>
+
+      <!-- Plain Text Type (Default) -->
+      <span *ngIf="(!item.type || item.type === 'text') && !isArray(item.value)">
+        {{ item.value !== null && item.value !== undefined ? item.value : '—' }}
+      </span>
+    </div>
+  </div>
+</div>

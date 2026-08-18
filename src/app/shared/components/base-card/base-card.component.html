@@ -1,0 +1,16 @@
+<div class="base-card-container" [ngClass]="cardClasses">
+  <!-- Optional Header Section -->
+  <div class="card-header-wrapper">
+    <ng-content select="[card-header]"></ng-content>
+  </div>
+
+  <!-- Main Body Section -->
+  <div class="card-body-wrapper">
+    <ng-content select="[card-body]"></ng-content>
+  </div>
+
+  <!-- Optional Footer Section -->
+  <div class="card-footer-wrapper">
+    <ng-content select="[card-footer]"></ng-content>
+  </div>
+</div>

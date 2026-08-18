@@ -1,0 +1,60 @@
+<div class="base-filter-container">
+  <div class="filter-grid">
+    <div
+      *ngFor="let ctrl of config"
+      class="filter-control-wrapper"
+      [style.flex-basis]="ctrl.width || '200px'"
+      [appTooltip]="ctrl.tooltip || ''"
+      tooltipPosition="top"
+    >
+      <label class="filter-label">{{ ctrl.label }}</label>
+
+      <!-- Text Input -->
+      <input
+        *ngIf="ctrl.type === 'text'"
+        type="text"
+        [placeholder]="ctrl.placeholder || 'Search...'"
+        [(ngModel)]="filterValues[ctrl.key]"
+        (ngModelChange)="onValueChange()"
+        class="filter-input"
+      />
+
+      <!-- Select Dropdown -->
+      <select
+        *ngIf="ctrl.type === 'select'"
+        [(ngModel)]="filterValues[ctrl.key]"
+        (ngModelChange)="onValueChange()"
+        class="filter-select"
+      >
+        <option value="" *ngIf="ctrl.placeholder">{{ ctrl.placeholder }}</option>
+        <option *ngFor="let opt of ctrl.options" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+
+      <!-- Date Input -->
+      <input
+        *ngIf="ctrl.type === 'date'"
+        type="date"
+        [(ngModel)]="filterValues[ctrl.key]"
+        (ngModelChange)="onValueChange()"
+        class="filter-date"
+      />
+    </div>
+
+    <!-- Actions Section -->
+    <div class="filter-actions-wrapper" *ngIf="hasActiveFilters()">
+      <button
+        (click)="resetFilters()"
+        class="reset-btn"
+        appTooltip="Reset all active filters"
+        tooltipPosition="top"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="reset-icon">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+        Clear Filters
+      </button>
+    </div>
+  </div>
+</div>
