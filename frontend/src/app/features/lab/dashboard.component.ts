@@ -20,7 +20,10 @@ import { DashboardService } from '../../core/services/dashboard.service';
           <p class="page-sub">Access incoming clinical order tickets, check specimen collections, and validate diagnostic parameters.</p>
         </div>
         <div class="header-actions">
-          <span class="active-lab-tag">🧪 Central Pathology Lab</span>
+          <span class="active-lab-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M10 2v7.31L4.62 19A2 2 0 0 0 6.38 22h11.24a2 2 0 0 0 1.76-3L14 9.31V2"></path><line x1="8.5" y1="2" x2="15.5" y2="2"></line><line x1="14" y1="9.31" x2="10" y2="9.31"></line></svg>
+            Central Pathology Lab
+          </span>
         </div>
       </div>
 
@@ -51,7 +54,10 @@ import { DashboardService } from '../../core/services/dashboard.service';
           <div class="metric-card-content" card-body>
             <div class="metric-label">Specimens Collected</div>
             <h3 class="metric-value text-blue">{{ dashboardService.labMetricsData()?.samplesCollected ?? 0 }}</h3>
-            <span class="metric-trend positive">✓ Barcodes scanned</span>
+            <span class="metric-trend positive">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Barcodes scanned
+            </span>
           </div>
         </app-base-card>
 
@@ -59,7 +65,10 @@ import { DashboardService } from '../../core/services/dashboard.service';
           <div class="metric-card-content" card-body>
             <div class="metric-label">Results Approved (Today)</div>
             <h3 class="metric-value text-green">{{ dashboardService.labMetricsData()?.completedOrders ?? 0 }}</h3>
-            <span class="metric-trend positive">Verified releases</span>
+            <span class="metric-trend positive">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Verified releases
+            </span>
           </div>
         </app-base-card>
 
@@ -262,11 +271,12 @@ import { DashboardService } from '../../core/services/dashboard.service';
       border-radius: var(--border-radius-sm);
       border: 1px solid var(--color-border);
       background-color: var(--color-bg-base);
+      color: var(--color-text-primary);
       outline: none;
     }
     .lab-input:focus {
       border-color: var(--color-primary);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
     }
 
     .btn-cancel {

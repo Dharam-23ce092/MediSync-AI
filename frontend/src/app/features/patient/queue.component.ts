@@ -34,7 +34,9 @@ import { AuthService } from '../../core/services/auth.service';
 
       <!-- Empty State -->
       <div class="queue-empty-state" *ngIf="!appointmentService.loading() && appointmentService.appointments().length === 0">
-        <div class="empty-icon">📋</div>
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        </div>
         <h3 class="empty-title">No Active Queue</h3>
         <p class="empty-text">You have no appointments in the queue today. Book an appointment to see your queue position.</p>
       </div>
@@ -96,7 +98,9 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
 
               <div class="doctor-badge-min">
-                <span class="badge-icon">👨‍⚕️</span>
+                <span class="badge-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </span>
                 <div class="badge-meta">
                   <span class="lbl">Consulting Clinician</span>
                   <span class="doc font-semibold">Dr. Devam Patel</span>
@@ -105,7 +109,9 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
 
               <div class="live-status-alert">
-                <span class="alert-icon">🔔</span>
+                <span class="alert-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                </span>
                 <p class="alert-desc">
                   <strong>Status Update:</strong> Token 22 is completed. Doctor is consulting Token 23.
                   Please report to OPD Desk 2 when your estimated wait drops below 5 mins.
@@ -113,7 +119,8 @@ import { AuthService } from '../../core/services/auth.service';
               </div>
 
               <button class="alert-check-in-btn" (click)="deskCheckIn()" appTooltip="Alert Desk Coordinator of your arrival">
-                🙋 Report Arrival to Desk
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+                Report Arrival to Desk
               </button>
             </div>
           </app-base-card>

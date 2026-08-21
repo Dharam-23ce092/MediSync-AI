@@ -98,7 +98,7 @@ interface NurseTask {
                   </div>
                 </div>
                 <div class="task-meta-info">
-                  <span class="task-time">⏰ {{ task.time }}</span>
+                  <span class="task-time"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>{{ task.time }}</span>
                   <span class="priority-pill" [ngClass]="'priority-' + task.priority">{{ task.priority | uppercase }}</span>
                 </div>
               </div>
@@ -110,7 +110,7 @@ interface NurseTask {
         <div class="alerts-column">
           <app-base-card [border]="true" elevation="sm" statusBorder="critical">
             <h3 class="section-title critical-header" card-header>
-              ⚠️ Critical Vitals Alerts
+              <span style="display: inline-flex; align-items: center; gap: 6px;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Critical Vitals Alerts</span>
             </h3>
             <div card-body class="alerts-list">
               <div *ngFor="let v of criticalVitalsList()" class="telemetry-alert-card" [class.critical]="v.status === 'critical'" [class.warning]="v.status === 'warning'" appTooltip="Click to view patient details" (click)="focusBed(v.bed)">
@@ -371,7 +371,7 @@ interface NurseTask {
       font-size: 12.5px;
     }
     .log-select:focus, .log-input:focus {
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       border-color: var(--color-primary);
     }
     .log-btn {
@@ -432,7 +432,7 @@ interface NurseTask {
     }
     .vitals-input:focus {
       border-color: var(--color-primary);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
     }
     .btn-cancel {
       background: transparent;

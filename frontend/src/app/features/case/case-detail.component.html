@@ -15,7 +15,8 @@
 
   <!-- Error State -->
   <div class="alert alert-danger" *ngIf="errorMessage()">
-    ⚠️ {{ errorMessage() }}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+    {{ errorMessage() }}
   </div>
 
   <!-- Main Grid Layout -->
@@ -82,7 +83,8 @@
           <div class="clinical-memo border-top mt-sm pt-sm">
             <span class="memo-title">Current Clinical Diagnosis</span>
             <p class="memo-content diagnosis-highlight" *ngIf="caseData()?.diagnosis">
-              🔍 {{ caseData()?.diagnosis }}
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              {{ caseData()?.diagnosis }}
             </p>
             <p class="memo-content font-italic color-muted" *ngIf="!caseData()?.diagnosis">
               Diagnosis pending clinical assessment note
@@ -109,7 +111,7 @@
             <div class="timeline-step" *ngFor="let event of caseData()?.timeline; let last = last">
               <!-- Milestone Icon -->
               <div class="step-icon-container">
-                <span class="step-icon">{{ getEventIcon(event.eventType) }}</span>
+                <span class="step-icon" [innerHTML]="getEventIcon(event.eventType)"></span>
               </div>
 
               <!-- Content details -->
@@ -117,7 +119,8 @@
                 <div class="step-header">
                   <span class="step-time">{{ event.date }}</span>
                   <span class="step-actor" *ngIf="event.actorName">
-                    👤 {{ event.actorName }} ({{ event.actorRole }})
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    {{ event.actorName }} ({{ event.actorRole }})
                   </span>
                 </div>
                 <p class="step-summary">{{ event.summary }}</p>

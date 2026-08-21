@@ -43,25 +43,25 @@
   --color-left-panel-bg: linear-gradient(135deg, #090D16 0%, #0F172A 100%);
   --color-right-panel-bg: #0D1322;
 
-  /* Semantic / Triage Colors */
-  --color-critical: #dc2626;
-  --color-critical-light: #fef2f2;
-  --color-critical-border: #fca5a5;
-  --color-urgent: #ea580c;
-  --color-urgent-light: #fff7ed;
-  --color-urgent-border: #fed7aa;
-  --color-semi-urgent: #ca8a04;
-  --color-semi-urgent-light: #fef9c3;
-  --color-semi-urgent-border: #fef08a;
-  --color-normal: #16a34a;
-  --color-normal-light: #f0fdf4;
-  --color-normal-border: #bbf7d0;
-  --color-info: #0284c7;
-  --color-info-light: #f0f9ff;
-  --color-info-border: #bae6fd;
-  --color-cleaning: #854d0e;
-  --color-cleaning-light: #fef9c3;
-  --color-cleaning-border: #fef08a;
+  /* Semantic / Triage Colors — Dark-optimized translucent fills */
+  --color-critical: #ef4444;
+  --color-critical-light: rgba(239, 68, 68, 0.12);
+  --color-critical-border: rgba(239, 68, 68, 0.25);
+  --color-urgent: #f97316;
+  --color-urgent-light: rgba(249, 115, 22, 0.12);
+  --color-urgent-border: rgba(249, 115, 22, 0.25);
+  --color-semi-urgent: #eab308;
+  --color-semi-urgent-light: rgba(234, 179, 8, 0.12);
+  --color-semi-urgent-border: rgba(234, 179, 8, 0.25);
+  --color-normal: #22c55e;
+  --color-normal-light: rgba(34, 197, 94, 0.12);
+  --color-normal-border: rgba(34, 197, 94, 0.25);
+  --color-info: #0ea5e9;
+  --color-info-light: rgba(14, 165, 233, 0.12);
+  --color-info-border: rgba(14, 165, 233, 0.25);
+  --color-cleaning: #a16207;
+  --color-cleaning-light: rgba(161, 98, 7, 0.12);
+  --color-cleaning-border: rgba(161, 98, 7, 0.25);
 
   /* Typography - Unified clean sans-serif */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -126,6 +126,26 @@ body.light-theme {
   --color-gradient-full: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
   --color-left-panel-bg: linear-gradient(135deg, #0F172A 0%, #0F766E 100%);
   --color-right-panel-bg: #F8FAFC;
+
+  /* Semantic / Triage Colors — Light-optimized opaque fills */
+  --color-critical: #dc2626;
+  --color-critical-light: #fef2f2;
+  --color-critical-border: #fca5a5;
+  --color-urgent: #ea580c;
+  --color-urgent-light: #fff7ed;
+  --color-urgent-border: #fed7aa;
+  --color-semi-urgent: #ca8a04;
+  --color-semi-urgent-light: #fef9c3;
+  --color-semi-urgent-border: #fef08a;
+  --color-normal: #16a34a;
+  --color-normal-light: #f0fdf4;
+  --color-normal-border: #bbf7d0;
+  --color-info: #0284c7;
+  --color-info-light: #f0f9ff;
+  --color-info-border: #bae6fd;
+  --color-cleaning: #854d0e;
+  --color-cleaning-light: #fef9c3;
+  --color-cleaning-border: #fef08a;
 }
 
 /* ==========================================

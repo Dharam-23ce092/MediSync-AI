@@ -96,12 +96,15 @@ interface DoctorItem {
                   (click)="selectedDoctorId.set(doc.id)"
                 >
                   <div class="doc-summary-col">
-                    <span class="doc-icon">👨‍⚕️</span>
+                    <span class="doc-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </span>
                     <div class="doc-meta-info">
                       <span class="doc-name font-semibold">{{ doc.name }}</span>
                       <span class="doc-spec">{{ doc.specialty }} • {{ doc.department_name || 'General' }}</span>
                       <span class="doc-avail" [class.text-green]="doc.availability_status === 'Available'" [class.text-orange]="doc.availability_status !== 'Available'">
-                        📅 {{ doc.availability_status || 'Available' }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        {{ doc.availability_status || 'Available' }}
                       </span>
                     </div>
                   </div>
@@ -158,7 +161,9 @@ interface DoctorItem {
 
               <!-- Estimated Wait Badge -->
               <div class="wait-alert-box" *ngIf="selectedSlot()">
-                <span class="alert-icon">💡</span>
+                <span class="alert-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </span>
                 <p class="alert-text">
                   Estimated walk-in wait time at OPD desk will be approx. <strong>10 mins</strong> with this scheduled slot.
                 </p>
@@ -459,10 +464,10 @@ export class PatientBook {
   specialties = ['Cardiology', 'General Medicine', 'Paediatrics', 'Dermatology'];
 
   symptomsList = [
-    { label: '💔 Chest pain / palpitation', value: 'chest-pain', specialty: 'Cardiology' },
-    { label: '🤒 High fever / flu symptoms', value: 'fever', specialty: 'General Medicine' },
-    { label: '👶 Child clinical consultation', value: 'paediatrics', specialty: 'Paediatrics' },
-    { label: '🧴 Skin rash / allergies', value: 'skin', specialty: 'Dermatology' }
+    { label: 'Chest Pain / Palpitations', value: 'chest-pain', specialty: 'Cardiology' },
+    { label: 'High Fever / Flu Symptoms', value: 'fever', specialty: 'General Medicine' },
+    { label: 'Pediatric Clinical Consultation', value: 'paediatrics', specialty: 'Paediatrics' },
+    { label: 'Dermatological Rash / Allergy', value: 'skin', specialty: 'Dermatology' }
   ];
 
   protected doctorService = inject(DoctorService);

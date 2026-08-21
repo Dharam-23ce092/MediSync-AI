@@ -102,22 +102,30 @@ interface PatientRecord {
                 <span class="section-sub-label">Recorded Vitals (Vitals Sign):</span>
                 <div class="vitals-matrix">
                   <div class="vital-box" appTooltip="Blood Pressure" tooltipPosition="top">
-                    <span class="vital-icon">❤️</span>
+                    <span class="vital-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </span>
                     <span class="vital-val" [class.text-danger]="isBpAlert()">{{ patient()?.vitals?.bp }}</span>
                     <span class="vital-unit">mmHg</span>
                   </div>
                   <div class="vital-box" appTooltip="Heart Rate / Pulse" tooltipPosition="top">
-                    <span class="vital-icon">🫀</span>
+                    <span class="vital-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </span>
                     <span class="vital-val" [class.text-danger]="isPulseAlert()">{{ patient()?.vitals?.pulse }}</span>
                     <span class="vital-unit">bpm</span>
                   </div>
                   <div class="vital-box" appTooltip="Oxygen Saturation" tooltipPosition="top">
-                    <span class="vital-icon">💨</span>
+                    <span class="vital-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>
+                    </span>
                     <span class="vital-val">{{ patient()?.vitals?.spo2 }}</span>
                     <span class="vital-unit">% SpO2</span>
                   </div>
                   <div class="vital-box" appTooltip="Body Temperature" tooltipPosition="top">
-                    <span class="vital-icon">🌡️</span>
+                    <span class="vital-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+                    </span>
                     <span class="vital-val">{{ patient()?.vitals?.temp }}</span>
                     <span class="vital-unit">°F</span>
                   </div>
@@ -285,7 +293,9 @@ interface PatientRecord {
 
                 <!-- Drug interaction conflicts -->
                 <div class="safety-alert danger" *ngIf="showDrugAlert()">
-                  <div class="alert-icon">⚠️</div>
+                  <div class="alert-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  </div>
                   <div class="alert-content-block">
                     <span class="alert-tag font-semibold">Medication Allergy Conflict</span>
                     <span class="alert-desc">Amlodipine has documented contraindications for patients with recorded allergies to Penicillin carriers.</span>
@@ -294,7 +304,9 @@ interface PatientRecord {
 
                 <!-- High BP Alarm -->
                 <div class="safety-alert warning" *ngIf="isBpAlert()">
-                  <div class="alert-icon">📈</div>
+                  <div class="alert-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                  </div>
                   <div class="alert-content-block">
                     <span class="alert-tag font-semibold">Elevated Vitals Warning</span>
                     <span class="alert-desc">Recorded Systolic BP of 174 mmHg is in Hypertension Stage 2. Consider adjusting dosage.</span>
@@ -302,7 +314,9 @@ interface PatientRecord {
                 </div>
 
                 <div class="safety-alert normal" *ngIf="!showDrugAlert() && !isBpAlert()">
-                  <div class="alert-icon">🛡️</div>
+                  <div class="alert-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                  </div>
                   <div class="alert-content-block">
                     <span class="alert-tag font-semibold">All Clear</span>
                     <span class="alert-desc">No drug-drug or drug-allergy interactions detected in current prescription draft.</span>
@@ -314,7 +328,9 @@ interface PatientRecord {
               <div class="ocr-widget">
                 <span class="insight-label">OCR Document Processor:</span>
                 <div class="ocr-box" (click)="simulateOcrUpload()" appTooltip="Upload external medical records to parse via OCR" tooltipPosition="left">
-                  <span class="ocr-icon">📄</span>
+                  <span class="ocr-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                  </span>
                   <span class="ocr-title">Analyze External PDF/Report</span>
                   <span class="ocr-desc">AI will extract and index data into EHR</span>
                 </div>

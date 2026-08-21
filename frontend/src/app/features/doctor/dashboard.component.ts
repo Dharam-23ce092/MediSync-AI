@@ -36,7 +36,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
       <div class="metrics-grid">
         <app-base-card [border]="true" elevation="sm">
           <div class="metric-card-content" card-body appTooltip="Today's appointments" tooltipPosition="top">
-            <div class="metric-icon opd-blue">📋</div>
+            <div class="metric-icon opd-blue"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
             <div class="metric-info">
               <span class="metric-label">Today's Appointments</span>
               <h3 class="metric-value">{{ metrics()?.appointmentsToday ?? 0 }}</h3>
@@ -47,7 +47,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 
         <app-base-card [border]="true" elevation="sm">
           <div class="metric-card-content" card-body appTooltip="Consultations in progress" tooltipPosition="top">
-            <div class="metric-icon complete-green">🩺</div>
+            <div class="metric-icon complete-green"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path><circle cx="20" cy="10" r="2"></circle></svg></div>
             <div class="metric-info">
               <span class="metric-label">In Consultation</span>
               <h3 class="metric-value">{{ metrics()?.inConsultation ?? 0 }}</h3>
@@ -57,7 +57,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 
         <app-base-card [border]="true" elevation="sm" statusBorder="critical">
           <div class="metric-card-content" card-body appTooltip="Critical vital logs needing review" tooltipPosition="top">
-            <div class="metric-icon alert-red">⚠️</div>
+            <div class="metric-icon alert-red"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
             <div class="metric-info">
               <span class="metric-label">Critical Vitals Alerts</span>
               <h3 class="metric-value red-text">{{ metrics()?.criticalVitals ?? 0 }}</h3>
@@ -68,7 +68,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 
         <app-base-card [border]="true" elevation="sm">
           <div class="metric-card-content" card-body appTooltip="Average waiting time across OPD" tooltipPosition="top">
-            <div class="metric-icon time-orange">⏱️</div>
+            <div class="metric-icon time-orange"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
             <div class="metric-info">
               <span class="metric-label">Avg. Wait Time</span>
               <h3 class="metric-value">—</h3>
@@ -112,7 +112,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
         <div class="sidebar-column">
           <app-base-card [border]="true" elevation="sm" statusBorder="critical">
             <h3 class="section-title critical-header" card-header>
-              🚨 Active Vitals Alerts
+              <span class="section-title-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon text-danger"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Active Vitals Alerts</span>
             </h3>
             <div card-body class="alerts-list">
               <div class="alert-item" appTooltip="Blood Pressure alert - Click to view EHR" tooltipPosition="left" (click)="goToConsultation('P1002')">
@@ -142,7 +142,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
           <!-- AI decision support tip of the day -->
           <app-base-card [border]="true" elevation="sm" class="margin-top-md">
             <h3 class="section-title ai-spark-header" card-header>
-              ⭐ AI Operational Insight
+              <span class="section-title-row"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon text-teal"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI Operational Insight</span>
             </h3>
             <div card-body class="ai-spark-content">
               <p class="ai-text">
@@ -227,10 +227,18 @@ import { DashboardService } from '../../core/services/dashboard.service';
       align-items: center;
       justify-content: center;
     }
-    .opd-blue { background-color: var(--color-primary-glow); }
-    .complete-green { background-color: var(--color-normal-light); }
-    .alert-red { background-color: var(--color-critical-light); }
-    .time-orange { background-color: var(--color-urgent-light); }
+    .opd-blue { background-color: var(--color-primary-glow); color: var(--color-primary); }
+    .complete-green { background-color: var(--color-normal-light); color: var(--color-normal); }
+    .alert-red { background-color: var(--color-critical-light); color: var(--color-critical); }
+    .time-orange { background-color: var(--color-urgent-light); color: var(--color-urgent); }
+
+    .section-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .inline-icon { flex-shrink: 0; }
+    .text-teal { color: var(--color-accent); }
 
     .metric-info {
       display: flex;

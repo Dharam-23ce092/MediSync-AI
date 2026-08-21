@@ -39,7 +39,10 @@ interface InventoryDrug {
           <p class="page-sub">Verify physician prescriptions, inspect safety parameters, and manage batch stock reserves.</p>
         </div>
         <div class="header-actions">
-          <span class="active-store-tag">🏪 Main OPD Pharmacy Branch</span>
+          <span class="active-store-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Main OPD Pharmacy Branch
+          </span>
         </div>
       </div>
 
@@ -64,7 +67,10 @@ interface InventoryDrug {
           <div class="metric-card-content" card-body>
             <div class="metric-label">Dispensed Today</div>
             <h3 class="metric-value text-green">{{ dashboardService.pharmacistMetricsData()?.dispensedToday ?? 0 }}</h3>
-            <span class="metric-trend positive">✓ Clean throughput</span>
+            <span class="metric-trend positive">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Clean throughput
+            </span>
           </div>
         </app-base-card>
 
@@ -155,7 +161,9 @@ interface InventoryDrug {
 
           <!-- PHI allergy alert check -->
           <div class="drug-allergy-alert-banner" *ngIf="ord.name.includes('Rahul')">
-            <span class="icon">⚠️</span>
+            <span class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </span>
             <div class="text">
               <strong>CRITICAL PHI ALLERGY ALERT:</strong> Patient is documented with a severe allergy to
               <strong>Penicillin</strong>. Verify drug ingredients before checking out.

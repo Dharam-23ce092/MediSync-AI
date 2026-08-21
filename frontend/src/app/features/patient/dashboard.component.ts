@@ -62,8 +62,10 @@ import { PatientStore } from '../../core/stores/patient.store';
 
       <!-- Main Portal Action Shortcuts -->
       <div class="shortcuts-grid">
-        <button class="shortcut-action-card primary" (click)="goToBook()" appTooltip="Book a consultation slots" tooltipPosition="bottom">
-          <span class="sc-icon">📅</span>
+        <button class="shortcut-action-card primary" (click)="goToBook()" appTooltip="Book a consultation slot" tooltipPosition="bottom">
+          <span class="sc-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </span>
           <div class="sc-info">
             <span class="sc-title">Book Appointment</span>
             <span class="sc-desc">Schedule slot with a clinician</span>
@@ -71,7 +73,9 @@ import { PatientStore } from '../../core/stores/patient.store';
         </button>
 
         <button class="shortcut-action-card accent" (click)="goToQueue()" appTooltip="Track active appointment queue token" tooltipPosition="bottom">
-          <span class="sc-icon">⏱️</span>
+          <span class="sc-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
           <div class="sc-info">
             <span class="sc-title">Live Wait Queue</span>
             <span class="sc-desc">Verify your token queue position</span>
@@ -255,7 +259,9 @@ import { PatientStore } from '../../core/stores/patient.store';
       </app-base-modal>
       </div>
       <div class="empty-state-card" *ngIf="patientStore.patients().length === 0">
-        <div class="empty-icon">👤</div>
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
         <h2 class="empty-title">No Patient Record Found</h2>
         <p class="empty-text">Your patient profile has not been linked to this account yet. Please contact the hospital administration.</p>
       </div>
