@@ -5,65 +5,52 @@
    ========================================== */
 
 :root {
-  /* Brand Colors - Default Dark Theme (Deep Midnight Navy & Clinical Teal Accent) */
-  --color-primary: #0EA5E9; /* Clinical Teal */
-  --color-primary-hover: #0284C7; /* Electric Blue */
+  /* Brand Colors - Clinical Cyan CTA & Accent Triggers */
+  --color-primary: #0EA5E9; /* Clinical Cyan CTA */
+  --color-primary-hover: #0284C7;
   --color-primary-lightest: rgba(14, 165, 233, 0.08);
   --color-primary-glow: rgba(14, 165, 233, 0.15);
 
-  --color-accent: #0EA5E9; /* Clinical Teal */
-  --color-accent-hover: #0284C7;
-  --color-accent-lightest: rgba(14, 165, 233, 0.08);
+  --color-accent: #38BDF8; /* Clinical Cyan Highlight */
+  --color-accent-hover: #0EA5E9;
+  --color-accent-lightest: rgba(56, 189, 248, 0.08);
 
-  /* Neutral Scale - Dark Theme */
-  --color-bg-base: #0B1120; /* Deep Midnight Navy */
-  --color-bg-surface: #111a36; /* Elevated Navy */
-  --color-bg-surface-hover: #1e294b;
-  --color-text-primary: #f8fafc; /* Clean White Slate */
-  --color-text-secondary: #94a3b8; /* Slate 400 */
-  --color-text-muted: #64748b; /* Slate 500 */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
-  --color-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  --color-modal-shadow: 0 20px 30px rgba(0, 0, 0, 0.4);
+  /* Matte Charcoal "Legacy Sync" Theme Tokens */
+  --color-bg-base: #121214; /* Deep Matte Charcoal App Canvas */
+  --color-bg-sidebar: #18181B; /* Dark Zinc Sidebar & Top Navbar */
+  --color-bg-surface: #202024; /* Cards & Container Surfaces */
+  --color-bg-surface-hover: #27272A; /* Hover & Alternating Row Highlight */
+  --color-text-primary: #FFFFFF; /* Main Titles, Numbers & Headings */
+  --color-text-body: #E4E4E7; /* Body Text & Table Data */
+  --color-text-secondary: #A1A1AA; /* Subtitles, Field Labels & Secondary Text */
+  --color-text-muted: #71717A; /* Muted Secondary */
+  --color-border: #2E2E33; /* Subtle Structural Border */
+  --color-border-nav: #27272A; /* Navbar & Sidebar Border */
+  --color-border-hover: #3F3F46;
+  --color-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --color-modal-shadow: 0 20px 30px rgba(0, 0, 0, 0.5);
 
-  /* Landing Page Specific Tokens - Dark Mode */
-  --color-header-bg: rgba(11, 17, 32, 0.95);
-  --color-hero-bg: #0B1120;
-  --color-features-bg: #0F172A;
-  --color-pricing-bg: #0B1120;
-  --color-card-bg: rgba(255, 255, 255, 0.03);
-  --color-card-border: rgba(255, 255, 255, 0.1);
-  --color-card-hover-border: rgba(14, 165, 233, 0.4);
+  /* Semantic / Triage Colors — Matte Charcoal Integrations */
+  --color-critical: #F87171;
+  --color-critical-light: #202024;
+  --color-critical-border: #2E2E33;
+  --color-urgent: #FB923C;
+  --color-urgent-light: #202024;
+  --color-urgent-border: #2E2E33;
+  --color-semi-urgent: #FBBF24;
+  --color-semi-urgent-light: #202024;
+  --color-semi-urgent-border: #2E2E33;
+  --color-normal: #34D399;
+  --color-normal-light: rgba(16, 185, 129, 0.1);
+  --color-normal-border: rgba(16, 185, 129, 0.2);
+  --color-info: #38BDF8;
+  --color-info-light: rgba(56, 189, 248, 0.1);
+  --color-info-border: rgba(56, 189, 248, 0.2);
+  --color-cleaning: #A1A1AA;
+  --color-cleaning-light: #202024;
+  --color-cleaning-border: #2E2E33;
 
-  /* Vibrant Gradients & Ambient Lights - Dark Mode */
-  --color-gradient-start: #0B1120;
-  --color-gradient-end: #1E293B;
-  --color-gradient-full: linear-gradient(135deg, #0B1120 0%, #1E293B 100%);
-  --color-left-panel-bg: linear-gradient(135deg, #090D16 0%, #0F172A 100%);
-  --color-right-panel-bg: #0D1322;
-
-  /* Semantic / Triage Colors — Dark-optimized translucent fills */
-  --color-critical: #ef4444;
-  --color-critical-light: rgba(239, 68, 68, 0.12);
-  --color-critical-border: rgba(239, 68, 68, 0.25);
-  --color-urgent: #f97316;
-  --color-urgent-light: rgba(249, 115, 22, 0.12);
-  --color-urgent-border: rgba(249, 115, 22, 0.25);
-  --color-semi-urgent: #eab308;
-  --color-semi-urgent-light: rgba(234, 179, 8, 0.12);
-  --color-semi-urgent-border: rgba(234, 179, 8, 0.25);
-  --color-normal: #22c55e;
-  --color-normal-light: rgba(34, 197, 94, 0.12);
-  --color-normal-border: rgba(34, 197, 94, 0.25);
-  --color-info: #0ea5e9;
-  --color-info-light: rgba(14, 165, 233, 0.12);
-  --color-info-border: rgba(14, 165, 233, 0.25);
-  --color-cleaning: #a16207;
-  --color-cleaning-light: rgba(161, 98, 7, 0.12);
-  --color-cleaning-border: rgba(161, 98, 7, 0.25);
-
-  /* Typography - Unified clean sans-serif */
+  /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: 'Inter', var(--font-sans);
 
@@ -75,13 +62,13 @@
   --spacing-xl: 32px;
   --spacing-xxl: 48px;
 
-  /* Layout */
+  /* Layout & Radii */
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 72px;
   --topbar-height: 70px;
-  --border-radius-sm: 6px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px; /* 16px radius for Cards */
+  --border-radius-lg: 16px;
   --border-radius-full: 9999px;
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
@@ -89,45 +76,29 @@
 
 :root.light-theme,
 body.light-theme {
-  /* Brand Colors - Light Theme (Deep Clinical Blue & Reassurance Green) */
-  --color-primary: #1b4d7a; /* Deep Clinical Blue */
+  --color-primary: #1b4d7a;
   --color-primary-hover: #153c60;
   --color-primary-lightest: #f4f7fb;
   --color-primary-glow: rgba(27, 77, 122, 0.12);
 
-  --color-accent: #0F766E; /* Clinical Dark Teal */
+  --color-accent: #0F766E;
   --color-accent-hover: #0D9488;
   --color-accent-lightest: rgba(15, 118, 110, 0.08);
 
-  /* Neutral Scale - Light Theme */
-  --color-bg-base: #f8fafc; /* Clean Slate Tones */
+  --color-bg-base: #f8fafc;
+  --color-bg-sidebar: #ffffff;
   --color-bg-surface: #ffffff;
   --color-bg-surface-hover: #f1f5f9;
-  --color-text-primary: #1e293b; /* Slate 800 */
-  --color-text-secondary: #475569; /* Slate 600 */
-  --color-text-muted: #94a3b8; /* Slate 400 */
-  --color-border: #e2e8f0; /* Slate 200 */
-  --color-border-hover: #cbd5e1; /* Slate 300 */
-  --color-card-shadow: 0 4px 12px rgba(15, 23, 42, 0.03), 0 1px 3px rgba(15, 23, 42, 0.02);
-  --color-modal-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --color-text-primary: #1e293b;
+  --color-text-body: #334155;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-nav: #e2e8f0;
+  --color-border-hover: #cbd5e1;
+  --color-card-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  --color-modal-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
 
-  /* Landing Page Specific Tokens - Light Mode */
-  --color-header-bg: rgba(255, 255, 255, 0.95);
-  --color-hero-bg: #f8fafc;
-  --color-features-bg: #ffffff;
-  --color-pricing-bg: #f8fafc;
-  --color-card-bg: #ffffff;
-  --color-card-border: #cbd5e1;
-  --color-card-hover-border: rgba(27, 77, 122, 0.4);
-
-  /* Vibrant Gradients & Ambient Lights - Light Mode */
-  --color-gradient-start: #F8FAFC;
-  --color-gradient-end: #E2E8F0;
-  --color-gradient-full: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-  --color-left-panel-bg: linear-gradient(135deg, #0F172A 0%, #0F766E 100%);
-  --color-right-panel-bg: #F8FAFC;
-
-  /* Semantic / Triage Colors — Light-optimized opaque fills */
   --color-critical: #dc2626;
   --color-critical-light: #fef2f2;
   --color-critical-border: #fca5a5;
@@ -161,10 +132,10 @@ body.light-theme {
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg-base);
-  color: var(--color-text-primary);
+  color: var(--color-text-body);
   line-height: 1.5;
   font-size: 14px;
-  overflow-y: auto; /* Enable public page scrolling */
+  overflow-y: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -399,7 +370,7 @@ input:focus, select:focus, textarea:focus, .form-control:focus, .form-input:focu
 }
 
 .nav-link.active {
-  box-shadow: 0 4px 14px rgba(27, 77, 122, 0.25) !important;
+  box-shadow: none !important;
 }
 
 /* Live KPI Metric Numbers pop animations */

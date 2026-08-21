@@ -273,14 +273,16 @@ import { PatientStore } from '../../core/stores/patient.store';
       flex-direction: column;
       gap: var(--spacing-lg);
     }
-    .patient-profile-banner {
+    .patient-header-card {
       display: flex;
-      gap: var(--spacing-md);
+      align-items: center;
+      gap: var(--spacing-lg);
       background-color: var(--color-bg-surface);
       border: 1px solid var(--color-border);
-      border-radius: var(--border-radius-lg);
+      border-radius: var(--border-radius-md);
       padding: var(--spacing-lg);
       box-shadow: var(--color-card-shadow);
+      transition: background-color var(--transition-normal), border-color var(--transition-normal);
     }
     .profile-avatar-circle {
       width: 64px;
@@ -302,7 +304,8 @@ import { PatientStore } from '../../core/stores/patient.store';
     }
     .patient-name {
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--color-text-primary);
     }
     .patient-meta-grid {
       display: grid;
@@ -338,21 +341,22 @@ import { PatientStore } from '../../core/stores/patient.store';
       gap: var(--spacing-md);
       padding: var(--spacing-md) var(--spacing-lg);
       border-radius: var(--border-radius-md);
-      border: none;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-bg-surface);
       cursor: pointer;
       text-align: left;
       transition: var(--transition-fast);
     }
     .shortcut-action-card:hover {
       transform: translateY(-2px);
-      box-shadow: var(--color-card-shadow);
+      background-color: var(--color-bg-surface-hover);
+      border-color: var(--color-border-hover);
+      box-shadow: var(--color-modal-shadow);
     }
     .shortcut-action-card.primary {
-      background-color: var(--color-primary-glow);
       color: var(--color-primary);
     }
     .shortcut-action-card.accent {
-      background-color: var(--color-accent-lightest);
       color: var(--color-accent);
     }
     .sc-icon {
@@ -363,12 +367,13 @@ import { PatientStore } from '../../core/stores/patient.store';
       flex-direction: column;
     }
     .sc-title {
-      font-weight: 700;
+      font-weight: 600;
       font-size: 14px;
+      color: var(--color-text-primary);
     }
     .sc-desc {
       font-size: 11.5px;
-      opacity: 0.8;
+      color: var(--color-text-secondary);
     }
 
     .sidebar-column {

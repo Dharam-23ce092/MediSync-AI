@@ -206,13 +206,13 @@ interface NurseTask {
       margin-top: 1px;
     }
     .shift-leader-badge {
-      background-color: var(--color-primary-glow);
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-      padding: 8px 14px;
-      border-radius: var(--border-radius-md);
-      font-weight: 600;
-      font-size: 12.5px;
+      background: rgba(56, 189, 248, 0.08);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 6px 14px;
+      border-radius: var(--border-radius-full);
+      font-weight: 500;
+      font-size: 0.875rem;
     }
 
     .nurse-split-grid {
@@ -277,8 +277,9 @@ interface NurseTask {
     .task-bed-badge {
       font-size: 9px;
       font-weight: 700;
-      background-color: var(--color-primary);
-      color: #ffffff;
+      background-color: rgba(56, 189, 248, 0.15);
+      color: var(--color-accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
       padding: 1px 6px;
       border-radius: var(--border-radius-sm);
       width: fit-content;
@@ -309,9 +310,9 @@ interface NurseTask {
       padding: 2px 6px;
       border-radius: var(--border-radius-full);
     }
-    .priority-high { background-color: var(--color-critical-light); color: var(--color-critical); }
-    .priority-medium { background-color: var(--color-urgent-light); color: var(--color-urgent); }
-    .priority-low { background-color: var(--color-info-light); color: var(--color-info); }
+    .priority-high { background-color: var(--color-critical-light); color: var(--color-critical); border: 1px solid var(--color-critical-border); }
+    .priority-medium { background-color: var(--color-urgent-light); color: var(--color-urgent); border: 1px solid var(--color-urgent-border); }
+    .priority-low { background-color: var(--color-info-light); color: var(--color-info); border: 1px solid var(--color-info-border); }
 
     /* Alert cards list */
     .alerts-list {
@@ -322,7 +323,8 @@ interface NurseTask {
     .telemetry-alert-card {
       padding: var(--spacing-sm) var(--spacing-md);
       border-radius: var(--border-radius-md);
-      border: 1px solid;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-bg-base);
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -331,14 +333,15 @@ interface NurseTask {
     }
     .telemetry-alert-card:hover {
       transform: translateX(3px);
+      border-color: var(--color-border-hover);
     }
     .telemetry-alert-card.critical {
-      background-color: var(--color-critical-light);
-      border-color: var(--color-critical-border);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
     }
     .telemetry-alert-card.warning {
-      background-color: var(--color-urgent-light);
-      border-color: var(--color-urgent-border);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
     }
     .alert-header-row {
       display: flex;

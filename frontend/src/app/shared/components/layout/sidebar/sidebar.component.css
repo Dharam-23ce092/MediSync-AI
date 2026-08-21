@@ -6,12 +6,12 @@
 .sidebar-container {
   width: var(--sidebar-width);
   height: 100%;
-  background-color: #0f172a; /* Premium Dark Navy */
-  color: #f1f5f9;
+  background-color: var(--color-bg-sidebar);
+  color: var(--color-text-body);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  transition: width var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid var(--color-border-nav);
+  transition: width var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1), background-color var(--transition-normal), border-color var(--transition-normal);
   overflow: hidden;
 }
 
@@ -26,7 +26,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--spacing-lg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border-nav);
+  background-color: var(--color-bg-sidebar);
   flex-shrink: 0;
 }
 
@@ -46,7 +47,7 @@
   font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.05em;
-  color: #ffffff;
+  color: var(--color-text-primary);
   white-space: nowrap;
   transition: opacity var(--transition-fast);
 }
@@ -123,9 +124,9 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 12px var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  color: #94a3b8;
+  padding: 10px var(--spacing-md);
+  border-radius: 12px;
+  color: var(--color-text-secondary);
   font-weight: 500;
   text-decoration: none;
   transition: var(--transition-fast);
@@ -142,17 +143,21 @@
 }
 
 .nav-link:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface-hover);
 }
 
-.nav-link.active {
-  color: #ffffff;
-  background-color: var(--color-primary);
+.nav-link.active,
+.nav-item.active .nav-link {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-surface-hover);
+  border-radius: 12px;
+  font-weight: 600;
 }
 
-.nav-link.active .nav-icon-wrapper {
-  color: #ffffff;
+.nav-link.active .nav-icon-wrapper,
+.nav-item.active .nav-icon-wrapper {
+  color: var(--color-primary);
 }
 
 .nav-text {
@@ -169,8 +174,8 @@
 /* Footer Section */
 .sidebar-footer {
   padding: var(--spacing-md) var(--spacing-sm);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid var(--color-border-nav);
+  background-color: var(--color-bg-sidebar);
   flex-shrink: 0;
 }
 

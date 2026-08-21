@@ -165,7 +165,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
     }
     .page-title {
       font-size: 22px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--color-text-primary);
     }
     .page-sub {
       font-size: 13px;
@@ -173,13 +174,13 @@ import { DashboardService } from '../../core/services/dashboard.service';
       margin-top: 1px;
     }
     .active-lab-tag {
-      background-color: var(--color-primary-glow);
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-      padding: 8px 14px;
-      border-radius: var(--border-radius-md);
-      font-weight: 600;
-      font-size: 12.5px;
+      background: var(--color-bg-surface-hover);
+      color: var(--color-accent);
+      border: 1px solid var(--color-border);
+      padding: 6px 14px;
+      border-radius: var(--border-radius-full);
+      font-weight: 500;
+      font-size: 0.875rem;
     }
 
     .metrics-grid {
@@ -198,7 +199,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
     }
     .metric-value {
       font-size: 24px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--color-text-primary);
       margin: 2px 0;
       line-height: 1;
     }
@@ -215,12 +217,13 @@ import { DashboardService } from '../../core/services/dashboard.service';
     .section-title {
       font-size: 15px;
       font-weight: 600;
+      color: var(--color-text-primary);
       display: flex;
       flex-direction: column;
     }
     .section-title .subtitle {
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-weight: 400;
       margin-top: 2px;
     }
@@ -245,15 +248,18 @@ import { DashboardService } from '../../core/services/dashboard.service';
       border-radius: var(--border-radius-md);
       border: 1px solid var(--color-border);
       font-size: 12.5px;
+      color: var(--color-text-body);
     }
     .parameter-entry-box {
       border: 1px solid var(--color-border);
+      background-color: var(--color-bg-surface);
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
     }
     .parameter-entry-box .sub-title {
       font-size: 13px;
       font-weight: 600;
+      color: var(--color-text-primary);
       margin-bottom: var(--spacing-sm);
     }
     .form-field {

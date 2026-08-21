@@ -181,32 +181,32 @@ import { DashboardService } from '../../core/services/dashboard.service';
       gap: var(--spacing-sm);
     }
     .status-indicator-pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 6px 12px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 6px 14px;
       border-radius: var(--border-radius-full);
       display: inline-flex;
       align-items: center;
       gap: 6px;
       border: 1px solid var(--color-border);
-      background-color: var(--color-bg-surface);
+      background: rgba(255, 255, 255, 0.04);
       color: var(--color-text-secondary);
     }
     .status-indicator-pill.normal {
-      color: var(--color-normal);
-      border-color: var(--color-normal-border);
-      background-color: var(--color-normal-light);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      background-color: rgba(16, 185, 129, 0.1);
     }
     .status-indicator-pill.info {
-      color: var(--color-info);
-      border-color: var(--color-info-border);
-      background-color: var(--color-info-light);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      background-color: rgba(56, 189, 248, 0.1);
     }
     .indicator-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: var(--border-radius-full);
-      background-color: var(--color-normal);
+      background-color: #34D399;
     }
     .metrics-grid {
       display: grid;
@@ -227,10 +227,10 @@ import { DashboardService } from '../../core/services/dashboard.service';
       align-items: center;
       justify-content: center;
     }
-    .opd-blue { background-color: var(--color-primary-glow); color: var(--color-primary); }
-    .complete-green { background-color: var(--color-normal-light); color: var(--color-normal); }
-    .alert-red { background-color: var(--color-critical-light); color: var(--color-critical); }
-    .time-orange { background-color: var(--color-urgent-light); color: var(--color-urgent); }
+    .opd-blue { background-color: rgba(56, 189, 248, 0.12); color: #38BDF8; }
+    .complete-green { background-color: rgba(16, 185, 129, 0.1); color: #34D399; }
+    .alert-red { background-color: rgba(239, 68, 68, 0.1); color: #EF4444; }
+    .time-orange { background-color: rgba(249, 115, 22, 0.12); color: #f97316; }
 
     .section-title-row {
       display: inline-flex;
@@ -273,16 +273,18 @@ import { DashboardService } from '../../core/services/dashboard.service';
     .section-title {
       font-size: 15px;
       font-weight: 600;
+      color: var(--color-text-primary);
       display: flex;
       flex-direction: column;
     }
     .section-title .subtitle {
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-weight: 400;
       margin-top: 2px;
     }
     .critical-header { color: var(--color-critical); }
+    .critical-header .text-danger { color: var(--color-critical); }
     .ai-spark-header { color: var(--color-accent); }
 
     .alerts-list {
@@ -292,8 +294,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
     }
     .alert-item {
       padding: var(--spacing-sm) var(--spacing-md);
-      background-color: var(--color-critical-light);
-      border: 1px solid var(--color-critical-border);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
       border-radius: var(--border-radius-sm);
       display: flex;
       justify-content: space-between;
@@ -304,6 +306,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
     .alert-item:hover {
       transform: translateX(2px);
       box-shadow: var(--color-card-shadow);
+      border-color: var(--color-border-hover);
     }
     .alert-meta {
       display: flex;
@@ -334,14 +337,14 @@ import { DashboardService } from '../../core/services/dashboard.service';
     .text-danger { color: var(--color-critical); }
 
     .ai-spark-content {
-      background-color: var(--color-accent-lightest);
-      border: 1.5px dashed var(--color-accent);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
     }
     .ai-text {
       font-size: 12.5px;
-      color: var(--color-text-secondary);
+      color: var(--color-text-body);
       line-height: 1.5;
     }
 

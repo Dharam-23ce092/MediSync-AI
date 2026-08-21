@@ -211,7 +211,8 @@ interface InventoryDrug {
     }
     .page-title {
       font-size: 22px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--color-text-primary);
     }
     .page-sub {
       font-size: 13px;
@@ -219,13 +220,13 @@ interface InventoryDrug {
       margin-top: 1px;
     }
     .active-store-tag {
-      background-color: var(--color-primary-glow);
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-      padding: 8px 14px;
-      border-radius: var(--border-radius-md);
-      font-weight: 600;
-      font-size: 12.5px;
+      background: var(--color-bg-surface-hover);
+      color: var(--color-accent);
+      border: 1px solid var(--color-border);
+      padding: 6px 14px;
+      border-radius: var(--border-radius-full);
+      font-weight: 500;
+      font-size: 0.875rem;
     }
 
     .metrics-grid {
@@ -244,7 +245,8 @@ interface InventoryDrug {
     }
     .metric-value {
       font-size: 24px;
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--color-text-primary);
       margin: 2px 0;
       line-height: 1;
     }
@@ -266,12 +268,13 @@ interface InventoryDrug {
     .section-title {
       font-size: 15px;
       font-weight: 600;
+      color: var(--color-text-primary);
       display: flex;
       flex-direction: column;
     }
     .section-title .subtitle {
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-weight: 400;
       margin-top: 2px;
     }
@@ -312,11 +315,12 @@ interface InventoryDrug {
       color: var(--color-critical);
       border-radius: var(--border-radius-md);
     }
-    .drug-allergy-alert-banner .icon { font-size: 18px; line-height: 1; }
-    .drug-allergy-alert-banner .text { font-size: 11.5px; line-height: 1.4; }
+    .drug-allergy-alert-banner .icon { font-size: 18px; line-height: 1; color: var(--color-critical); }
+    .drug-allergy-alert-banner .text { font-size: 11.5px; line-height: 1.4; color: var(--color-text-body); }
 
     .prescribed-drugs-box {
       border: 1px solid var(--color-border);
+      background-color: var(--color-bg-surface);
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
     }

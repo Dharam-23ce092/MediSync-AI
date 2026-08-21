@@ -505,11 +505,14 @@ interface PatientRecord {
       font-family: var(--font-display);
       font-weight: 700;
       font-size: 14px;
-      color: var(--color-text-primary);
+      color: #F8FAFC;
+    }
+    .vital-val.text-danger {
+      color: #F87171 !important;
     }
     .vital-unit {
       font-size: 10px;
-      color: var(--color-text-secondary);
+      color: #94A3B8;
     }
 
     /* SOAP documentation workspace */
@@ -683,23 +686,30 @@ interface PatientRecord {
       gap: var(--spacing-sm);
       padding: var(--spacing-sm) var(--spacing-md);
       border-radius: var(--border-radius-sm);
-      border: 1px solid transparent;
+      border: 1px solid #2E2E33;
+      background-color: #202024;
       margin-top: var(--spacing-xs);
     }
     .safety-alert.danger {
-      background-color: var(--color-critical-light);
-      border-color: var(--color-critical-border);
-      color: var(--color-critical);
+      background-color: #202024;
+      border: 1px solid #2E2E33;
+      color: #F87171;
+    }
+    .safety-alert.danger .alert-icon {
+      color: #EF4444;
+    }
+    .safety-alert.danger .alert-tag {
+      color: #EF4444;
     }
     .safety-alert.warning {
-      background-color: var(--color-urgent-light);
-      border-color: var(--color-urgent-border);
-      color: var(--color-urgent);
+      background-color: #202024;
+      border: 1px solid #2E2E33;
+      color: #FB923C;
     }
     .safety-alert.normal {
-      background-color: var(--color-normal-light);
-      border-color: var(--color-normal-border);
-      color: var(--color-normal);
+      background-color: #202024;
+      border: 1px solid #2E2E33;
+      color: #34D399;
     }
     .alert-icon {
       font-size: 18px;
@@ -708,7 +718,11 @@ interface PatientRecord {
     .alert-content-block {
       display: flex;
       flex-direction: column;
-      gap: 1px;
+      gap: 2px;
+    }
+    .alert-desc {
+      font-size: 12px;
+      color: #A1A1AA;
     }
     .alert-tag {
       font-size: 11px;

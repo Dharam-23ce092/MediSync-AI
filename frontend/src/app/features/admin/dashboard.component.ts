@@ -244,12 +244,13 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
     .section-title {
       font-size: 15px;
       font-weight: 600;
+      color: var(--color-text-primary);
       display: flex;
       flex-direction: column;
     }
     .section-title .subtitle {
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-secondary);
       font-weight: 400;
       margin-top: 2px;
     }
@@ -263,8 +264,8 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
     }
     .warning-alert-box {
       padding: var(--spacing-sm) var(--spacing-md);
-      background-color: var(--color-critical-light);
-      border: 1px solid var(--color-critical-border);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
       border-radius: var(--border-radius-sm);
       cursor: help;
     }
@@ -281,8 +282,8 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
     }
 
     .forecast-content {
-      background-color: var(--color-accent-lightest);
-      border: 1.5px dashed var(--color-accent);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
       display: flex;
