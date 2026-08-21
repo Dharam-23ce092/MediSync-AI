@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { pool } from '../config/postgres';
 import { ConsultationNote } from '../models/mongo/schemas';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth.middleware';
 import { authorizeRoles } from '../middleware/role.middleware';
@@ -24,6 +25,25 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse']), 
       clinicalNotes: clinicalNotes || '',
       createdAt: new Date()
     });
+
+    // Link and propagate to SQL Cases if appointmentId exists
+    if (appointmentId) {
+      const apptRes = await pool.query('SELECT case_id FROM appointments WHERE id = $1', [appointmentId]);
+      if (apptRes.rows.length > 0) {
+        const caseId = apptRes.rows[0].case_id;
+        if (caseId) {
+          await pool.query(
+            'UPDATE cases SET status = $1, diagnosis = $2, chief_complaint = $3, updated_at = NOW() WHERE id = $4',
+            ['consultation_complete', diagnosis, chiefComplaint, caseId]
+          );
+
+          await pool.query(
+            'INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)',
+            [`CT_${Date.now()}`, caseId, 'consultation_completed', req.user?.userId, req.user?.role, `Consultation finalized. Diagnosis recorded: ${diagnosis}`]
+          );
+        }
+      }
+    }
 
     await logAudit(req, `CONSULTATION_SAVED: Patient ${patientUhid}`, 'ehr', 'info');
 

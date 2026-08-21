@@ -1,32 +1,18 @@
 {
-  "name": "medisync-ai",
-  "version": "0.0.0",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
-  },
+  "name": "medisync-workspace",
+  "version": "2.0.0",
+  "description": "MediSync AI Hospital Management System Workspace",
   "private": true,
-  "packageManager": "npm@11.6.2",
-  "dependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/compiler": "^21.2.0",
-    "@angular/core": "^21.2.0",
-    "@angular/forms": "^21.2.0",
-    "@angular/platform-browser": "^21.2.0",
-    "@angular/router": "^21.2.0",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+  "scripts": {
+    "dev": "concurrently \"npm run dev-backend\" \"npm run dev-frontend\"",
+    "dev-backend": "npm run dev --prefix backend",
+    "dev-frontend": "npm start --prefix frontend",
+    "start-rag": "uvicorn app.main:app --host 127.0.0.1 --port 8100 --reload --app-dir rag-service",
+    "setup-db": "npm run setup-db --prefix backend",
+    "seed": "npm run seed --prefix backend",
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend && pip install -r rag-service/requirements.txt"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.21",
-    "@angular/cli": "^21.2.21",
-    "@angular/compiler-cli": "^21.2.0",
-    "jsdom": "^28.0.0",
-    "prettier": "^3.8.1",
-    "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "concurrently": "^8.2.2"
   }
 }

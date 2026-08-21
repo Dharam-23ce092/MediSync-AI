@@ -104,12 +104,30 @@ router.post('/', authenticateJWT, async (req: AuthenticatedRequest, res: Respons
 
     // 4. Create appointment time
     const appointmentTime = new Date();
-
     const apptId = `A${Date.now()}`;
+    const hospitalId = req.user?.hospital_id;
+    const caseId = `C${Date.now()}`;
+    const caseNumber = `CASE-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    // Create Case Transactionally
     await pool.query(
-      `INSERT INTO appointments (id, patient_id, doctor_id, token, appointment_time, type, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [apptId, patient.id, doctorId, String(nextTokenNum), appointmentTime, type, 'Waiting']
+      `INSERT INTO cases (id, hospital_id, patient_id, case_number, type, status, assigned_doctor, chief_complaint)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [caseId, hospitalId, patient.id, caseNumber, 'OPD', 'registered', doctorId, 'EHR appointment registration']
+    );
+
+    // Create Timeline Event
+    await pool.query(
+      `INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [`CT_${Date.now()}`, caseId, 'appointment_booked', req.user?.userId, req.user?.role, `OPD appointment scheduled with token #${nextTokenNum}`]
+    );
+
+    // Create Appointment
+    await pool.query(
+      `INSERT INTO appointments (id, hospital_id, case_id, patient_id, doctor_id, token, appointment_time, type, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [apptId, hospitalId, caseId, patient.id, doctorId, String(nextTokenNum), appointmentTime, type, 'Waiting']
     );
 
     await logAudit(req, `APPOINTMENT_BOOKED: Patient ${patient.uhid} with Doctor ${doctorName}`, 'appointment', 'info');
@@ -145,6 +163,7 @@ router.patch('/status', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nur
   }
 
   try {
+    let appt: any = null;
     const updateResult = await pool.query(
       `UPDATE appointments
        SET status = $1
@@ -164,6 +183,40 @@ router.patch('/status', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nur
       if (fallbackResult.rowCount === 0) {
         return res.status(404).json({ success: false, message: 'Active appointment not found', errorCode: 'APPOINTMENT_NOT_FOUND' });
       }
+      appt = fallbackResult.rows[0];
+    } else {
+      appt = updateResult.rows[0];
+    }
+
+    // Propagate case status & timeline update
+    if (appt && appt.case_id) {
+      let caseStatus = 'registered';
+      let eventType = 'appointment_updated';
+      let summary = `Appointment status updated to ${status}`;
+
+      if (status === 'Checked-in' || status === 'Checked-out') {
+        caseStatus = 'waiting';
+        eventType = 'patient_checked_in';
+        summary = 'Patient checked in at reception desk';
+      } else if (status === 'In Consultation') {
+        caseStatus = 'in_consultation';
+        eventType = 'consultation_started';
+        summary = 'Clinical consultation started by physician';
+      } else if (status === 'Completed') {
+        caseStatus = 'prescription_pending';
+        eventType = 'consultation_completed';
+        summary = 'Clinical consultation finalized';
+      }
+
+      await pool.query(
+        'UPDATE cases SET status = $1, updated_at = NOW() WHERE id = $2',
+        [caseStatus, appt.case_id]
+      );
+
+      await pool.query(
+        'INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)',
+        [`CT_${Date.now()}`, appt.case_id, eventType, req.user?.userId, req.user?.role, summary]
+      );
     }
 
     await logAudit(req, `APPOINTMENT_STATUS_UPDATED: Patient ${patientId} to ${status}`, 'appointment', 'info');

@@ -1,0 +1,170 @@
+<div class="split-container">
+  <!-- Left Side: Showcase Panel -->
+  <div class="showcase-side">
+    <div class="showcase-glow"></div>
+    <div class="showcase-content">
+      <div class="showcase-brand" routerLink="/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon-svg">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+        <span class="showcase-logo-text">MediSync<span class="highlight">-AI</span></span>
+      </div>
+
+      <div class="showcase-middle">
+        <div class="badge-row">
+          <span class="metric-badge"><span class="badge-dot"></span> 99.9% Uptime</span>
+          <span class="metric-badge"><span class="badge-dot"></span> HIPAA Compliant</span>
+        </div>
+        
+        <h2 class="showcase-heading">Access Your Patient Medical History & Care Files Instantly</h2>
+        
+        <div class="testimonial-card">
+          <p class="testimonial-text">
+            "With the Patient Portal, I can book appointments, view my active prescriptions, retrieve my diagnostic lab reports, and clear pending invoices online in seconds."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">PM</div>
+            <div class="author-details">
+              <span class="author-name">Priya Mehta</span>
+              <span class="author-title">Registered Patient User</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-footer">
+        <span>© 2026 MediSync-AI Platform</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Patient Registration Form -->
+  <div class="form-side">
+    <!-- Header with theme toggle -->
+    <div class="form-side-header">
+      <a routerLink="/" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </a>
+      <button class="theme-toggle-btn" type="button" (click)="themeService.toggleTheme()" [attr.aria-label]="themeService.isLight() ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+        <svg *ngIf="themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg *ngIf="!themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+    </div>
+
+    <div class="form-wrapper animate-fade">
+      <h2 class="form-title">Patient Portal Registry</h2>
+      <p class="form-subtitle">Register a personal account and link directly to your hospital healthcare provider</p>
+
+      <!-- Success Alert -->
+      <div class="alert alert-success-box" *ngIf="successMessage()">
+        <div class="success-icon-badge">✓</div>
+        <h4 style="margin-top: 1rem; color: var(--color-primary); text-align: center;">Account Registered!</h4>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); text-align: center; margin-bottom: 1.5rem;">
+          {{ successMessage() }}
+        </p>
+        <button class="btn btn-primary btn-block" (click)="navigateToLogin()">Go to Sign In</button>
+      </div>
+
+      <!-- Error Alert -->
+      <div class="auth-error mb-4" *ngIf="errorMessage()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <!-- Patient Form -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage()" class="auth-form auth-card" novalidate>
+        <div class="form-grid-two">
+          
+          <!-- Personal Credentials -->
+          <div class="form-group gap-5">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" id="name" formControlName="name" placeholder="e.g. Rahul Kumar Patel" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('name')">
+            <span class="field-error" *ngIf="isFieldInvalid('name')">Name must be at least 3 characters</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="email" class="form-label">Personal Email Address</label>
+            <input type="email" id="email" formControlName="email" placeholder="e.g. rahul@gmail.com" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('email')">
+            <span class="field-error" *ngIf="isFieldInvalid('email')">Enter a valid email address</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="password" class="form-label">Choose Password</label>
+            <input type="password" id="password" formControlName="password" placeholder="Minimum 6 characters" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('password')">
+            <span class="field-error" *ngIf="isFieldInvalid('password')">Password must be at least 6 characters</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="hospitalId" class="form-label">Select Hospital / Provider</label>
+            <select id="hospitalId" formControlName="hospitalId" class="form-input rounded-xl custom-select" [class.input-error]="isFieldInvalid('hospitalId')">
+              <option value="" disabled selected>-- Select Hospital --</option>
+              <option *ngFor="let h of hospitals()" [value]="h.id">{{ h.name }}</option>
+            </select>
+            <span class="field-error" *ngIf="isFieldInvalid('hospitalId')">Please select your primary hospital</span>
+          </div>
+
+          <!-- Demographics -->
+          <div class="form-group gap-5">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" id="age" formControlName="age" placeholder="Age" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('age')">
+            <span class="field-error" *ngIf="isFieldInvalid('age')">Enter a valid age (0 - 120)</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="gender" class="form-label">Gender</label>
+            <select id="gender" formControlName="gender" class="form-input rounded-xl custom-select" [class.input-error]="isFieldInvalid('gender')">
+              <option value="" disabled selected>-- Select Gender --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="field-error" *ngIf="isFieldInvalid('gender')">Please select gender</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="bloodGroup" class="form-label">Blood Group</label>
+            <select id="bloodGroup" formControlName="bloodGroup" class="form-input rounded-xl custom-select" [class.input-error]="isFieldInvalid('bloodGroup')">
+              <option value="" disabled selected>-- Select Blood Group --</option>
+              <option value="A+ve">A+</option>
+              <option value="A-ve">A-</option>
+              <option value="B+ve">B+</option>
+              <option value="B-ve">B-</option>
+              <option value="AB+ve">AB+</option>
+              <option value="AB-ve">AB-</option>
+              <option value="O+ve">O+</option>
+              <option value="O-ve">O-</option>
+            </select>
+            <span class="field-error" *ngIf="isFieldInvalid('bloodGroup')">Select blood group</span>
+          </div>
+
+          <div class="form-group gap-5">
+            <label for="emergencyContact" class="form-label">Emergency Contact Number</label>
+            <input type="text" id="emergencyContact" formControlName="emergencyContact" placeholder="e.g. +91 98765 12345" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('emergencyContact')">
+            <span class="field-error" *ngIf="isFieldInvalid('emergencyContact')">Valid phone is required (min 10 digits)</span>
+          </div>
+
+          <div class="form-group gap-5 full-width">
+            <label for="allergies" class="form-label">Known Drug Allergies (Optional)</label>
+            <textarea id="allergies" formControlName="allergies" placeholder="e.g. Penicillin, Sulfa drugs (leave blank if none)" class="form-input rounded-xl" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div class="actions mt-6">
+          <a class="back-link" routerLink="/">Cancel</a>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Registering...' : 'Register Profile' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="registration-links mt-6" *ngIf="!successMessage()">
+        Already registered? <a routerLink="/login">Sign In</a>
+      </div>
+    </div>
+  </div>
+</div>

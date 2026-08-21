@@ -97,20 +97,28 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor']), async (re
 
     const loId = `L${Date.now()}`;
     const date = new Date().toISOString().split('T')[0];
+    const hospitalId = req.user?.hospital_id;
+
+    // Resolve active case ID for patient
+    const caseRes = await pool.query(
+      "SELECT id FROM cases WHERE patient_id = $1 AND status != 'closed' ORDER BY created_at DESC LIMIT 1",
+      [targetPatient.id]
+    );
+    const caseId = caseRes.rows.length > 0 ? caseRes.rows[0].id : null;
 
     await pool.query(
-      `INSERT INTO lab_orders (id, patient_id, doctor_id, test_name, specimen, status, date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [loId, targetPatient.id, doctorId, testName, specimen, 'Received', date]
+      `INSERT INTO lab_orders (id, hospital_id, case_id, patient_id, doctor_id, test_name, specimen, status, date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [loId, hospitalId, caseId, targetPatient.id, doctorId, testName, specimen, 'Received', date]
     );
 
     // Charge creation
     const invoiceNum = `INV-LAB-${Date.now()}`;
     const billingId = `B_LAB_${Date.now()}`;
     await pool.query(
-      `INSERT INTO billing (id, patient_id, invoice_number, subtotal, discount, tax, total, paid, balance, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [billingId, targetPatient.id, invoiceNum, 450.00, 0.00, 81.00, 531.00, 0.00, 531.00, 'PENDING']
+      `INSERT INTO billing (id, hospital_id, case_id, patient_id, invoice_number, subtotal, discount, tax, total, paid, balance, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [billingId, hospitalId, caseId, targetPatient.id, invoiceNum, 450.00, 0.00, 81.00, 531.00, 0.00, 531.00, 'PENDING']
     );
 
     await pool.query(
@@ -118,6 +126,18 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor']), async (re
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [`BI_${billingId}_1`, billingId, `Laboratory charges for test: ${testName}`, 1, 450.00, 450.00]
     );
+
+    // Update Case status and timeline
+    if (caseId) {
+      await pool.query(
+        "UPDATE cases SET status = 'lab_pending', updated_at = NOW() WHERE id = $1",
+        [caseId]
+      );
+      await pool.query(
+        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+        [`CT_${Date.now()}`, caseId, 'lab_ordered', req.user?.userId, req.user?.role, `Diagnostic lab ordered: ${testName}`]
+      );
+    }
 
     await logAudit(req, `LAB_ORDER_CREATED: ${testName} for Patient ${targetPatient.uhid}`, 'lab', 'info');
 
@@ -152,6 +172,14 @@ router.post('/:id/collect', authenticateJWT, authorizeRoles(['admin', 'nurse', '
 
     if (updateResult.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Lab order not found' });
+    }
+
+    const lo = updateResult.rows[0];
+    if (lo && lo.case_id) {
+      await pool.query(
+        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+        [`CT_${Date.now()}`, lo.case_id, 'lab_sample_collected', req.user?.userId, req.user?.role, `Specimen sample collected for: ${lo.test_name}`]
+      );
     }
 
     await logAudit(req, `LAB_SAMPLE_COLLECTED: Order ${id}`, 'lab', 'info');
@@ -193,6 +221,25 @@ router.post('/:id/results', authenticateJWT, authorizeRoles(['admin', 'lab']), a
     );
 
     await pool.query(`UPDATE lab_orders SET status = 'Completed' WHERE id = $1`, [id]);
+
+    // Propagate completion status to Case & Timeline
+    const loDetails = orderRes.rows[0];
+    if (loDetails) {
+      // Find case_id from the database
+      const fullLo = await pool.query('SELECT case_id, test_name FROM lab_orders WHERE id = $1', [id]);
+      const caseId = fullLo.rows[0]?.case_id;
+      const testName = fullLo.rows[0]?.test_name;
+      if (caseId) {
+        await pool.query(
+          "UPDATE cases SET status = 'lab_complete', updated_at = NOW() WHERE id = $1",
+          [caseId]
+        );
+        await pool.query(
+          "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+          [`CT_${Date.now()}`, caseId, 'lab_completed', req.user?.userId, req.user?.role, `Diagnostic results ready for: ${testName}`]
+        );
+      }
+    }
 
     await logAudit(req, `LAB_RESULTS_ENTERED: Completed results for order ${id}`, 'lab', 'info');
 

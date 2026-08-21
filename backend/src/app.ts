@@ -18,6 +18,9 @@ import auditRouter from './routes/audit.routes';
 import aiRouter from './routes/ai.routes';
 import consultationRouter from './routes/consultation.routes';
 import dashboardRouter from './routes/dashboard.routes';
+import hospitalRouter from './routes/hospital.routes';
+import staffRouter from './routes/staff.routes';
+import casesRouter from './routes/case.routes';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
@@ -58,6 +61,9 @@ app.use('/api/audit-logs', auditRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/consultations', consultationRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/hospitals', hospitalRouter);
+app.use('/api/staff', staffRouter);
+app.use('/api/cases', casesRouter);
 
 // Health Check
 app.get('/api/health', (req: Request, res: Response) => {

@@ -79,20 +79,28 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor']), async (re
 
     const rxId = `O${Date.now()}`;
     const date = new Date().toISOString().split('T')[0];
+    const hospitalId = req.user?.hospital_id;
+
+    // Resolve active case ID for patient
+    const caseRes = await pool.query(
+      "SELECT id FROM cases WHERE patient_id = $1 AND status != 'closed' ORDER BY created_at DESC LIMIT 1",
+      [targetPatient.id]
+    );
+    const caseId = caseRes.rows.length > 0 ? caseRes.rows[0].id : null;
 
     await pool.query(
-      `INSERT INTO prescriptions (id, patient_id, doctor_id, drug_details, status, date)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [rxId, targetPatient.id, doctorId, drugDetails, 'Pending', date]
+      `INSERT INTO prescriptions (id, hospital_id, case_id, patient_id, doctor_id, drug_details, status, date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [rxId, hospitalId, caseId, targetPatient.id, doctorId, drugDetails, 'Pending', date]
     );
 
     // Charge creation
     const invoiceNum = `INV-RX-${Date.now()}`;
     const billingId = `B_${Date.now()}`;
     await pool.query(
-      `INSERT INTO billing (id, patient_id, invoice_number, subtotal, discount, tax, total, paid, balance, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [billingId, targetPatient.id, invoiceNum, 350.00, 0.00, 63.00, 413.00, 0.00, 413.00, 'PENDING']
+      `INSERT INTO billing (id, hospital_id, case_id, patient_id, invoice_number, subtotal, discount, tax, total, paid, balance, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [billingId, hospitalId, caseId, targetPatient.id, invoiceNum, 350.00, 0.00, 63.00, 413.00, 0.00, 413.00, 'PENDING']
     );
 
     await pool.query(
@@ -100,6 +108,18 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor']), async (re
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [`BI_${billingId}_1`, billingId, `Pharmacy charges for Rx ${rxId}`, 1, 350.00, 350.00]
     );
+
+    // Update Case status and timeline
+    if (caseId) {
+      await pool.query(
+        "UPDATE cases SET status = 'prescription_issued', updated_at = NOW() WHERE id = $1",
+        [caseId]
+      );
+      await pool.query(
+        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+        [`CT_${Date.now()}`, caseId, 'prescription_created', req.user?.userId, req.user?.role, `Prescription issued by Dr. ${doctorName || 'Staff'}: ${drugDetails}`]
+      );
+    }
 
     await logAudit(req, `PRESCRIPTION_CREATED: Rx ${rxId} for Patient ${targetPatient.uhid}`, 'pharmacy', 'info');
 
@@ -138,6 +158,18 @@ router.patch('/:id/dispense', authenticateJWT, authorizeRoles(['admin', 'pharmac
 
     if (updateResult.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Prescription not found', errorCode: 'PRESCRIPTION_NOT_FOUND' });
+    }
+
+    const rx = updateResult.rows[0];
+    if (rx && rx.case_id) {
+      await pool.query(
+        "UPDATE cases SET status = 'pharmacy_dispensed', updated_at = NOW() WHERE id = $1",
+        [rx.case_id]
+      );
+      await pool.query(
+        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+        [`CT_${Date.now()}`, rx.case_id, 'drug_dispensed', req.user?.userId, req.user?.role, `Medications successfully dispensed by pharmacy`]
+      );
     }
 
     await logAudit(req, `PRESCRIPTION_DISPENSED: Rx ${id} marked complete`, 'pharmacy', 'info');

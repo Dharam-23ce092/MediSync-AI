@@ -1,17 +1,45 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+dist/
+tmp/
+out-tsc/
+bazel-out/
+frontend/dist/
+backend/dist/
 
-# Node
-/node_modules
-npm-debug.log
-yarn-error.log
+# Dependencies
+node_modules/
+*/node_modules/
+frontend/node_modules/
+backend/node_modules/
 
-# IDEs and editors
+# Angular
+.angular/
+*/.angular/
+frontend/.angular/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+build.log
+
+# Python / RAG service
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+venv/
+*/venv/
+.venv/
+*/.venv/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDEs & Editors
 .idea/
 .project
 .classpath
@@ -19,8 +47,6 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
-
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -29,28 +55,12 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
-# Miscellaneous
-/.angular/cache
-.sass-cache/
+# OS & Misc
+.DS_Store
+Thumbs.db
 /connect.lock
 /coverage
 /libpeerconnection.log
 testem.log
 /typings
 __screenshots__/
-
-# System files
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# Backend generated/dependency files
-backend/node_modules/
-backend/dist/
-
-# Build logs
-build.log

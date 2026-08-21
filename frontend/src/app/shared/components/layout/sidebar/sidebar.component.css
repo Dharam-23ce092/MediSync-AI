@@ -1,0 +1,226 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar-container {
+  width: var(--sidebar-width);
+  height: 100%;
+  background-color: #0f172a; /* Premium Dark Navy */
+  color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  transition: width var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.sidebar-container.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* Header section */
+.sidebar-header {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.logo-icon {
+  stroke: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+}
+
+.logo-text .highlight {
+  color: var(--color-accent);
+}
+
+.sidebar-container.collapsed .logo-text {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+.collapse-toggle {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.collapse-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.collapse-toggle svg {
+  transition: transform var(--transition-normal);
+}
+
+.collapse-toggle svg.rotated {
+  transform: rotate(180deg);
+}
+
+.sidebar-container.collapsed .collapse-toggle {
+  display: none; /* Hide toggle on collapsed to save width, or keep it inside. Actually keeping it hidden looks cleaner. */
+}
+
+/* Hover expand style for collapsed menu */
+.sidebar-container.collapsed:hover {
+  width: var(--sidebar-width);
+}
+
+.sidebar-container.collapsed:hover .logo-text {
+  opacity: 1;
+  width: auto;
+}
+
+.sidebar-container.collapsed:hover .collapse-toggle {
+  display: flex;
+}
+
+/* Navigation Menu */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md) 0;
+}
+
+.nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: 0 var(--spacing-sm);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  color: #94a3b8;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.nav-icon-wrapper {
+  margin-right: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background-color: var(--color-primary);
+}
+
+.nav-link.active .nav-icon-wrapper {
+  color: #ffffff;
+}
+
+.nav-text {
+  transition: opacity var(--transition-fast);
+  font-size: 13px;
+}
+
+.sidebar-container.collapsed:not(:hover) .nav-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Footer Section */
+.sidebar-footer {
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.user-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-accent);
+  color: #0f172a;
+  font-family: var(--font-display);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.user-role {
+  font-size: 10px;
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-top: 1px;
+}
+
+.sidebar-container.collapsed:not(:hover) .user-info {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}

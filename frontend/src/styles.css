@@ -1,0 +1,410 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ==========================================
+   MEDISYNC AI GLOBAL DESIGN SYSTEM
+   ========================================== */
+
+:root {
+  /* Brand Colors - Default Dark Theme (Deep Midnight Navy & Clinical Teal Accent) */
+  --color-primary: #0EA5E9; /* Clinical Teal */
+  --color-primary-hover: #0284C7; /* Electric Blue */
+  --color-primary-lightest: rgba(14, 165, 233, 0.08);
+  --color-primary-glow: rgba(14, 165, 233, 0.15);
+
+  --color-accent: #0EA5E9; /* Clinical Teal */
+  --color-accent-hover: #0284C7;
+  --color-accent-lightest: rgba(14, 165, 233, 0.08);
+
+  /* Neutral Scale - Dark Theme */
+  --color-bg-base: #0B1120; /* Deep Midnight Navy */
+  --color-bg-surface: #111a36; /* Elevated Navy */
+  --color-bg-surface-hover: #1e294b;
+  --color-text-primary: #f8fafc; /* Clean White Slate */
+  --color-text-secondary: #94a3b8; /* Slate 400 */
+  --color-text-muted: #64748b; /* Slate 500 */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --color-modal-shadow: 0 20px 30px rgba(0, 0, 0, 0.4);
+
+  /* Landing Page Specific Tokens - Dark Mode */
+  --color-header-bg: rgba(11, 17, 32, 0.95);
+  --color-hero-bg: #0B1120;
+  --color-features-bg: #0F172A;
+  --color-pricing-bg: #0B1120;
+  --color-card-bg: rgba(255, 255, 255, 0.03);
+  --color-card-border: rgba(255, 255, 255, 0.1);
+  --color-card-hover-border: rgba(14, 165, 233, 0.4);
+
+  /* Vibrant Gradients & Ambient Lights - Dark Mode */
+  --color-gradient-start: #0B1120;
+  --color-gradient-end: #1E293B;
+  --color-gradient-full: linear-gradient(135deg, #0B1120 0%, #1E293B 100%);
+  --color-left-panel-bg: linear-gradient(135deg, #090D16 0%, #0F172A 100%);
+  --color-right-panel-bg: #0D1322;
+
+  /* Semantic / Triage Colors */
+  --color-critical: #dc2626;
+  --color-critical-light: #fef2f2;
+  --color-critical-border: #fca5a5;
+  --color-urgent: #ea580c;
+  --color-urgent-light: #fff7ed;
+  --color-urgent-border: #fed7aa;
+  --color-semi-urgent: #ca8a04;
+  --color-semi-urgent-light: #fef9c3;
+  --color-semi-urgent-border: #fef08a;
+  --color-normal: #16a34a;
+  --color-normal-light: #f0fdf4;
+  --color-normal-border: #bbf7d0;
+  --color-info: #0284c7;
+  --color-info-light: #f0f9ff;
+  --color-info-border: #bae6fd;
+  --color-cleaning: #854d0e;
+  --color-cleaning-light: #fef9c3;
+  --color-cleaning-border: #fef08a;
+
+  /* Typography - Unified clean sans-serif */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Inter', var(--font-sans);
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --topbar-height: 70px;
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+:root.light-theme,
+body.light-theme {
+  /* Brand Colors - Light Theme (Deep Clinical Blue & Reassurance Green) */
+  --color-primary: #1b4d7a; /* Deep Clinical Blue */
+  --color-primary-hover: #153c60;
+  --color-primary-lightest: #f4f7fb;
+  --color-primary-glow: rgba(27, 77, 122, 0.12);
+
+  --color-accent: #0F766E; /* Clinical Dark Teal */
+  --color-accent-hover: #0D9488;
+  --color-accent-lightest: rgba(15, 118, 110, 0.08);
+
+  /* Neutral Scale - Light Theme */
+  --color-bg-base: #f8fafc; /* Clean Slate Tones */
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-hover: #f1f5f9;
+  --color-text-primary: #1e293b; /* Slate 800 */
+  --color-text-secondary: #475569; /* Slate 600 */
+  --color-text-muted: #94a3b8; /* Slate 400 */
+  --color-border: #e2e8f0; /* Slate 200 */
+  --color-border-hover: #cbd5e1; /* Slate 300 */
+  --color-card-shadow: 0 4px 12px rgba(15, 23, 42, 0.03), 0 1px 3px rgba(15, 23, 42, 0.02);
+  --color-modal-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+
+  /* Landing Page Specific Tokens - Light Mode */
+  --color-header-bg: rgba(255, 255, 255, 0.95);
+  --color-hero-bg: #f8fafc;
+  --color-features-bg: #ffffff;
+  --color-pricing-bg: #f8fafc;
+  --color-card-bg: #ffffff;
+  --color-card-border: #cbd5e1;
+  --color-card-hover-border: rgba(27, 77, 122, 0.4);
+
+  /* Vibrant Gradients & Ambient Lights - Light Mode */
+  --color-gradient-start: #F8FAFC;
+  --color-gradient-end: #E2E8F0;
+  --color-gradient-full: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+  --color-left-panel-bg: linear-gradient(135deg, #0F172A 0%, #0F766E 100%);
+  --color-right-panel-bg: #F8FAFC;
+}
+
+/* ==========================================
+   BASE & RESET STYLES
+   ========================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  font-size: 14px;
+  overflow-y: auto; /* Enable public page scrolling */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================
+   GLOBAL UTILITIES
+   ========================================== */
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.flex-1 { flex: 1; }
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+.m-0 { margin: 0; }
+.p-0 { padding: 0; }
+
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--color-text-muted); }
+.text-secondary { color: var(--color-text-secondary); }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+
+/* Custom Tooltip Container Styles */
+.medisync-tooltip {
+  position: absolute;
+  background-color: #0f172a;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: var(--border-radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  pointer-events: none;
+  z-index: 10000;
+  animation: tooltip-fade-in var(--transition-fast);
+}
+
+.medisync-tooltip::after {
+  content: "";
+  position: absolute;
+  border-width: 5px;
+  border-style: solid;
+}
+
+/* Tooltip Positions */
+.medisync-tooltip-top::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: #0f172a transparent transparent transparent;
+}
+.medisync-tooltip-bottom::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: transparent transparent #0f172a transparent;
+}
+.medisync-tooltip-left::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-color: transparent transparent transparent #0f172a;
+}
+.medisync-tooltip-right::after {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-color: transparent #0f172a transparent transparent;
+}
+
+/* Animations */
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+.animate-slide-up {
+  animation: slideInUp var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-right {
+  animation: slideInRight var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: var(--border-radius-sm);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================
+   PREMIUM MICRO-ANIMATIONS & HOVER INTERACTIONS
+   ========================================== */
+
+/* Unified Card & Dashboard Widget elevations */
+.clinical-card, app-base-card, .staff-list-card, .onboarding-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease !important;
+}
+
+.clinical-card:hover, app-base-card:hover, .staff-list-card:hover, .onboarding-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Reusable base button states */
+button, .btn, .login-btn, .btn-primary, .btn-secondary, .btn-back, .btn-toggle {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease !important;
+}
+
+button:hover:not(:disabled), .btn:hover:not(:disabled), .login-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(27, 77, 122, 0.18) !important;
+}
+
+button:active:not(:disabled), .btn:active:not(:disabled), .login-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(27, 77, 122, 0.1) !important;
+}
+
+/* Form Input Focus Ring Glows */
+input, select, textarea, .form-control, .form-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+input:focus, select:focus, textarea:focus, .form-control:focus, .form-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 4px rgba(27, 77, 122, 0.15) !important;
+}
+
+/* Sidebar navigation link slides */
+.nav-link {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease !important;
+}
+
+.nav-link:hover {
+  transform: translateX(4px);
+}
+
+.nav-link.active {
+  box-shadow: 0 4px 14px rgba(27, 77, 122, 0.25) !important;
+}
+
+/* Live KPI Metric Numbers pop animations */
+.kpi-content:hover .kpi-value {
+  animation: scale-up-pulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes scale-up-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Live timeline trace milestone slides */
+.timeline-step {
+  opacity: 0;
+  animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.timeline-step:nth-child(1) { animation-delay: 0.05s; }
+.timeline-step:nth-child(2) { animation-delay: 0.1s; }
+.timeline-step:nth-child(3) { animation-delay: 0.15s; }
+.timeline-step:nth-child(4) { animation-delay: 0.2s; }
+.timeline-step:nth-child(5) { animation-delay: 0.25s; }
+.timeline-step:nth-child(6) { animation-delay: 0.3s; }
+.timeline-step:nth-child(7) { animation-delay: 0.35s; }
+.timeline-step:nth-child(8) { animation-delay: 0.4s; }
+

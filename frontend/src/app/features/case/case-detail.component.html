@@ -1,0 +1,132 @@
+<div class="case-detail-container animate-fade">
+  <!-- Top bar navigation -->
+  <div class="top-nav-bar">
+    <button class="btn-back" (click)="goBack()">← Back to Dashboard</button>
+    <div class="case-meta" *ngIf="caseData()">
+      <span class="meta-label">CASE NUMBER:</span>
+      <span class="meta-val font-semibold">{{ caseData()?.caseNumber }}</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-panel" *ngIf="isLoading()">
+    <span class="spinner"></span> Loading clinical case records...
+  </div>
+
+  <!-- Error State -->
+  <div class="alert alert-danger" *ngIf="errorMessage()">
+    ⚠️ {{ errorMessage() }}
+  </div>
+
+  <!-- Main Grid Layout -->
+  <div class="case-grid-layout" *ngIf="!isLoading() && caseData()">
+    
+    <!-- Left Column: Patient Profile & Vitals summary -->
+    <div class="profile-column">
+      <!-- Patient Summary Card -->
+      <div class="clinical-card">
+        <div class="card-header">
+          <h3>Patient Profile</h3>
+        </div>
+        <div class="card-body">
+          <div class="patient-profile-block">
+            <div class="profile-avatar">
+              {{ caseData()?.patientName?.substring(0, 2)?.toUpperCase() }}
+            </div>
+            <div class="profile-info">
+              <h4>{{ caseData()?.patientName }}</h4>
+              <p>UHID: <span class="font-semibold">{{ caseData()?.patientUhid }}</span></p>
+              <p>{{ caseData()?.gender }}, {{ caseData()?.age }} yrs • Blood Group: <span class="font-semibold">{{ caseData()?.bloodGroup }}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case Lifecycle Status Card -->
+      <div class="clinical-card mt-md">
+        <div class="card-header">
+          <h3>Operational Status</h3>
+        </div>
+        <div class="card-body">
+          <div class="status-summary-item">
+            <span class="item-label">Current Stage:</span>
+            <span class="status-badge" [class]="getStatusClass(caseData()!.status)">
+              {{ getStatusLabel(caseData()!.status) }}
+            </span>
+          </div>
+          <div class="status-summary-item border-top">
+            <span class="item-label">Consulting Doctor:</span>
+            <span class="item-value font-semibold">{{ caseData()?.doctorName || 'Not Assigned' }}</span>
+          </div>
+          <div class="status-summary-item border-top">
+            <span class="item-label">Admission Registered:</span>
+            <span class="item-value">{{ caseData()?.admissionDate || 'N/A' }}</span>
+          </div>
+          <div class="status-summary-item border-top">
+            <span class="item-label">Discharge Cleared:</span>
+            <span class="item-value">{{ caseData()?.dischargeDate || 'Active Case' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinical Information Card -->
+      <div class="clinical-card mt-md">
+        <div class="card-header">
+          <h3>Clinical Summary</h3>
+        </div>
+        <div class="card-body">
+          <div class="clinical-memo">
+            <span class="memo-title">Chief Complaint</span>
+            <p class="memo-content">{{ caseData()?.chiefComplaint }}</p>
+          </div>
+          <div class="clinical-memo border-top mt-sm pt-sm">
+            <span class="memo-title">Current Clinical Diagnosis</span>
+            <p class="memo-content diagnosis-highlight" *ngIf="caseData()?.diagnosis">
+              🔍 {{ caseData()?.diagnosis }}
+            </p>
+            <p class="memo-content font-italic color-muted" *ngIf="!caseData()?.diagnosis">
+              Diagnosis pending clinical assessment note
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Case Timeline Flow -->
+    <div class="timeline-column">
+      <div class="timeline-card">
+        <div class="card-header">
+          <h3>EHR Event Timeline Logs</h3>
+          <p>Chronological trace logs of all receptionist checkout, pharmacy, diagnostic and billing transactions.</p>
+        </div>
+
+        <div class="card-body">
+          <div class="timeline-container">
+            <!-- Connection Line -->
+            <div class="timeline-line"></div>
+
+            <!-- Loop timeline events -->
+            <div class="timeline-step" *ngFor="let event of caseData()?.timeline; let last = last">
+              <!-- Milestone Icon -->
+              <div class="step-icon-container">
+                <span class="step-icon">{{ getEventIcon(event.eventType) }}</span>
+              </div>
+
+              <!-- Content details -->
+              <div class="step-details" [class.latest-step]="last">
+                <div class="step-header">
+                  <span class="step-time">{{ event.date }}</span>
+                  <span class="step-actor" *ngIf="event.actorName">
+                    👤 {{ event.actorName }} ({{ event.actorRole }})
+                  </span>
+                </div>
+                <p class="step-summary">{{ event.summary }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

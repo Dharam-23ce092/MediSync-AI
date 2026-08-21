@@ -1,0 +1,199 @@
+<div class="split-container">
+  <!-- Left Side: Showcase Panel -->
+  <div class="showcase-side">
+    <div class="showcase-glow"></div>
+    <div class="showcase-content">
+      <div class="showcase-brand" routerLink="/">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon-svg">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+        <span class="showcase-logo-text">MediSync<span class="highlight">-AI</span></span>
+      </div>
+
+      <div class="showcase-middle">
+        <div class="badge-row">
+          <span class="metric-badge"><span class="badge-dot"></span> 99.9% Uptime</span>
+          <span class="metric-badge"><span class="badge-dot"></span> HIPAA Compliant</span>
+        </div>
+        
+        <h2 class="showcase-heading">Provision Your Hospital Workspace in Minutes</h2>
+        
+        <div class="testimonial-card">
+          <p class="testimonial-text">
+            "We onboarded 40 doctors and 100+ medical staff via a single CSV drag-and-drop. The tenant isolation keeps our patient charts fully secure."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">ZH</div>
+            <div class="author-details">
+              <span class="author-name">Zydus Admin Center</span>
+              <span class="author-title">Operations & Security Division</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-footer">
+        <span>© 2026 MediSync-AI Platform</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Onboarding form -->
+  <div class="form-side">
+    <!-- Header with theme toggle -->
+    <div class="form-side-header">
+      <a routerLink="/" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Home
+      </a>
+      <button class="theme-toggle-btn" type="button" (click)="themeService.toggleTheme()" [attr.aria-label]="themeService.isLight() ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+        <svg *ngIf="themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg *ngIf="!themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+    </div>
+
+    <div class="form-wrapper animate-fade">
+      <!-- Step Indicator -->
+      <div class="step-indicator" *ngIf="currentStep() < 3">
+        <div class="step-badge" [class.active]="currentStep() === 1">1</div>
+        <span class="step-line"></span>
+        <div class="step-badge" [class.active]="currentStep() === 2">2</div>
+      </div>
+
+      <!-- Step Headers -->
+      <div class="header-section" *ngIf="currentStep() === 1">
+        <h2 class="form-title">Register Your Hospital</h2>
+        <p class="form-subtitle">Let's start with your hospital's licensing and contact profiles.</p>
+      </div>
+      <div class="header-section" *ngIf="currentStep() === 2">
+        <h2 class="form-title">Create Administrator Account</h2>
+        <p class="form-subtitle">Configure the initial account that will manage your staff directory.</p>
+      </div>
+
+      <!-- Error Alert -->
+      <div class="auth-error mt-4 mb-4" *ngIf="errorMessage()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <!-- Multi-step Form -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" *ngIf="currentStep() < 3" class="auth-form auth-card" novalidate>
+
+        <!-- STEP 1: Hospital details -->
+        <div *ngIf="currentStep() === 1" class="form-step">
+          <div class="form-grid-two">
+            <div class="form-group gap-5">
+              <label for="name" class="form-label">Hospital Name</label>
+              <input type="text" id="name" formControlName="name" placeholder="e.g. Zydus Hospital" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('name', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('name', 1)">Name must be at least 3 characters</span>
+            </div>
+
+            <div class="form-group gap-5">
+              <label for="slug" class="form-label">Slug URL (Unique ID)</label>
+              <input type="text" id="slug" formControlName="slug" placeholder="e.g. zydus-hospital" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('slug', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('slug', 1)">Invalid slug (lowercase, hyphens only)</span>
+            </div>
+
+            <div class="form-group gap-5">
+              <label for="licenseNo" class="form-label">Medical License Number</label>
+              <input type="text" id="licenseNo" formControlName="licenseNo" placeholder="e.g. LIC-981240-IND" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('licenseNo', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('licenseNo', 1)">License number is required</span>
+            </div>
+
+            <div class="form-group gap-5">
+              <label for="phone" class="form-label">Contact Phone Number</label>
+              <input type="text" id="phone" formControlName="phone" placeholder="e.g. +91 98765 43210" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('phone', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('phone', 1)">Valid 10-digit phone is required</span>
+            </div>
+
+            <div class="form-group gap-5 full-width">
+              <label for="domain" class="form-label">Email Domain Mapping (Optional)</label>
+              <input type="text" id="domain" formControlName="domain" placeholder="e.g. @zydus.org" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('domain', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('domain', 1)">Must start with '@'</span>
+            </div>
+
+            <div class="form-group gap-5 full-width">
+              <label for="address" class="form-label">Street Address</label>
+              <input type="text" id="address" formControlName="address" placeholder="e.g. 101, SG Highway" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('address', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('address', 1)">Address is required</span>
+            </div>
+
+            <div class="form-group gap-5">
+              <label for="city" class="form-label">City</label>
+              <input type="text" id="city" formControlName="city" placeholder="e.g. Ahmedabad" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('city', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('city', 1)">City is required</span>
+            </div>
+
+            <div class="form-group gap-5">
+              <label for="state" class="form-label">State / Province</label>
+              <input type="text" id="state" formControlName="state" placeholder="e.g. Gujarat" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('state', 1)">
+              <span class="field-error" *ngIf="isFieldInvalid('state', 1)">State is required</span>
+            </div>
+          </div>
+
+          <div class="actions mt-6">
+            <a class="back-link" routerLink="/">Cancel</a>
+            <button type="button" class="btn btn-primary next-btn" (click)="nextStep()">Continue to Step 2 ➔</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Administrator User details -->
+        <div *ngIf="currentStep() === 2" class="form-step">
+          <div class="form-group gap-5">
+            <label for="adminName" class="form-label">Administrator Full Name</label>
+            <input type="text" id="adminName" formControlName="adminName" placeholder="e.g. Rajesh Iyer" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('adminName', 2)">
+            <span class="field-error" *ngIf="isFieldInvalid('adminName', 2)">Admin name must be at least 3 characters</span>
+          </div>
+
+          <div class="form-group gap-5 mt-4">
+            <label for="adminEmail" class="form-label">Administrator Work Email</label>
+            <input type="email" id="adminEmail" formControlName="adminEmail" placeholder="e.g. admin@zydus.org" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('adminEmail', 2)">
+            <span class="field-error" *ngIf="isFieldInvalid('adminEmail', 2)">Enter a valid email address</span>
+          </div>
+
+          <div class="form-group gap-5 mt-4">
+            <label for="adminPassword" class="form-label">Access Password</label>
+            <input type="password" id="adminPassword" formControlName="adminPassword" placeholder="Minimum 6 characters" class="form-input rounded-xl" [class.input-error]="isFieldInvalid('adminPassword', 2)">
+            <span class="field-error" *ngIf="isFieldInvalid('adminPassword', 2)">Password must be at least 6 characters</span>
+          </div>
+
+          <div class="actions mt-6">
+            <button type="button" class="btn btn-secondary" (click)="prevStep()">⬅ Back</button>
+            <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Provisioning System...' : 'Complete & Onboard' }}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- STEP 3: Success Screen -->
+      <div class="success-step" *ngIf="currentStep() === 3">
+        <div class="success-icon-badge">✓</div>
+        <h2 class="form-title mt-4">Environment Provisioned!</h2>
+        <p class="form-subtitle">
+          Your hospital space has been created on MediSync-AI. The administrator account is active.
+        </p>
+        
+        <div class="info-block">
+          <h4>How to get started:</h4>
+          <ol>
+            <li>Click <strong>Sign In to Portal</strong> below.</li>
+            <li>Log in with your administrator email and password.</li>
+            <li>Go to <strong>Staff</strong> page to upload your employee directory list.</li>
+          </ol>
+        </div>
+
+        <button class="btn btn-primary btn-block mt-6" (click)="navigateToLogin()">Sign In to Portal</button>
+      </div>
+
+      <!-- Bottom helper link -->
+      <div class="registration-links mt-6" *ngIf="currentStep() < 3">
+        Already registered? <a routerLink="/login">Sign In</a>
+      </div>
+    </div>
+  </div>
+</div>

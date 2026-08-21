@@ -8,7 +8,8 @@ export interface AuthenticatedRequest extends Request {
     userId: string;
     email: string;
     name: string;
-    role: 'admin' | 'doctor' | 'nurse' | 'patient' | 'pharmacist' | 'lab';
+    role: 'super_admin' | 'admin' | 'doctor' | 'nurse' | 'patient' | 'pharmacist' | 'lab' | 'receptionist';
+    hospital_id?: string;
     uhid?: string;
     specialty?: string;
   };

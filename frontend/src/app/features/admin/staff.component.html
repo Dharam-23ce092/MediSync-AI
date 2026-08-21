@@ -1,0 +1,334 @@
+<div class="admin-staff-container animate-fade">
+  <!-- Title Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Staff Onboarding & Directory</h1>
+      <p class="page-sub">Onboard clinical employees, import directory mapping lists, and manage platform permissions.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary-action" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Staff Member
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="alert alert-success" *ngIf="successMessage()">
+    <span>✓ {{ successMessage() }}</span>
+    <button class="alert-close" (click)="successMessage.set(null)">×</button>
+  </div>
+  <div class="alert alert-danger" *ngIf="errorMessage()">
+    <span>⚠ {{ errorMessage() }}</span>
+    <button class="alert-close" (click)="errorMessage.set(null)">×</button>
+  </div>
+
+  <div class="staff-layout">
+    <!-- Left: Staff List Table & Controls -->
+    <div class="staff-list-card">
+      <div class="card-header-with-controls">
+        <div>
+          <h3>Employee Directory ({{ filteredStaff().length }})</h3>
+          <p>Central roster of doctors, nurses, pharmacists, and diagnostic technicians.</p>
+        </div>
+
+        <div class="controls-bar">
+          <div class="search-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input 
+              type="text" 
+              placeholder="Search by Name, Email, or EMP ID..." 
+              [(ngModel)]="searchQuery" 
+              class="filter-input"
+            />
+          </div>
+
+          <select [(ngModel)]="selectedRole" class="role-select">
+            <option value="ALL">All Roles</option>
+            <option value="doctor">Doctors</option>
+            <option value="nurse">Nurses</option>
+            <option value="pharmacist">Pharmacists</option>
+            <option value="lab">Lab Technicians</option>
+            <option value="receptionist">Receptionists</option>
+            <option value="admin">Administrators</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="loading-state" *ngIf="isLoading()">
+          <span class="spinner"></span> Loading employee roster...
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading() && filteredStaff().length === 0">
+          <div class="empty-icon-svg text-muted">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <h4>No staff members found</h4>
+          <p>Use the "Add Staff Member" button above or import via CSV on the right.</p>
+        </div>
+
+        <div class="table-responsive" *ngIf="!isLoading() && filteredStaff().length > 0">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th>Emp ID</th>
+                <th>Name & Department</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Specialty / Unit</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let member of filteredStaff()">
+                <td class="font-semibold text-muted">{{ member.employee_id || 'N/A' }}</td>
+                <td>
+                  <div class="name-cell">
+                    <div class="avatar">{{ member.name.substring(0, 2).toUpperCase() }}</div>
+                    <div>
+                      <div class="name-text">{{ member.name }}</div>
+                      <div class="dept-text" *ngIf="member.department_name">{{ member.department_name }} ({{ member.department_code }})</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-secondary">{{ member.email }}</td>
+                <td>
+                  <span class="role-badge" [class]="'badge-' + member.role">
+                    {{ member.role }}
+                  </span>
+                </td>
+                <td class="text-secondary">{{ member.specialty || 'General' }}</td>
+                <td>
+                  <span class="status-indicator" [class.active]="member.is_active">
+                    {{ member.is_active ? 'Active' : 'Suspended' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <div class="actions-wrapper">
+                    <!-- Status Toggle Action -->
+                    <button 
+                      class="btn-icon btn-status" 
+                      [class.is-active]="member.is_active"
+                      (click)="toggleStaffStatus(member)"
+                      [title]="member.is_active ? 'Active Account — Click to Deactivate' : 'Suspended Account — Click to Activate'"
+                    >
+                      <svg *ngIf="member.is_active" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                      <svg *ngIf="!member.is_active" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
+                    </button>
+
+                    <!-- Edit Action -->
+                    <button 
+                      class="btn-icon btn-edit" 
+                      (click)="openEditModal(member)" 
+                      title="Edit Staff Details"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+
+                    <!-- Delete Action -->
+                    <button 
+                      class="btn-icon btn-delete" 
+                      (click)="confirmDelete(member)" 
+                      title="Delete Staff Member"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Import/Onboarding Panel -->
+    <div class="onboarding-sidebar">
+      <div class="onboarding-card">
+        <div class="card-header">
+          <h3>Bulk Import Staff</h3>
+          <p>Upload a CSV spreadsheet containing employee profiles for batch onboarding.</p>
+        </div>
+
+        <div class="card-body">
+          <div 
+            class="drag-drop-zone"
+            [class.drag-over]="dragOver()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <div class="zone-content" *ngIf="!selectedFile">
+              <div class="zone-icon-svg text-teal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </div>
+              <p>Drag and drop staff CSV / Excel file here or</p>
+              <label for="csvFileInput" class="btn-browse">Browse Files</label>
+              <input 
+                type="file" 
+                id="csvFileInput" 
+                (change)="onFileSelected($event)" 
+                accept=".csv" 
+                style="display: none;"
+              >
+            </div>
+            
+            <div class="file-details" *ngIf="selectedFile">
+              <div class="file-icon-svg text-teal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </div>
+              <div class="file-name">{{ selectedFile.name }}</div>
+              <div class="file-size">Size: {{ (selectedFile.size / 1024).toFixed(2) }} KB</div>
+              <button class="btn-clear" (click)="selectedFile = null">Remove</button>
+            </div>
+          </div>
+
+          <div class="import-help">
+            <p>Required header schema for batch employee creation:</p>
+            <code>name, email, role, department, specialty, employee_id</code>
+            <a class="download-link" (click)="downloadSampleCSV()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Sample CSV Template
+            </a>
+          </div>
+
+          <button 
+            class="btn btn-primary btn-block" 
+            [disabled]="!selectedFile || isUploading()"
+            (click)="uploadCSV()"
+          >
+            {{ isUploading() ? 'Processing Import...' : 'Import Directory' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Staff Modal -->
+  <div class="modal-backdrop" *ngIf="showModal()">
+    <div class="modal-card animate-scale">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ isEditMode() ? 'Edit Staff Member' : 'Add New Staff Member' }}</h2>
+        <button class="modal-close-btn" (click)="closeModal()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveStaff()" class="modal-body">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              [(ngModel)]="staffForm.name" 
+              name="name" 
+              required 
+              placeholder="e.g. Dr. Aakash Verma" 
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Work Email <span class="required">*</span></label>
+            <input 
+              type="email" 
+              [(ngModel)]="staffForm.email" 
+              name="email" 
+              required 
+              [disabled]="isEditMode()"
+              placeholder="e.g. aakash@hospital.org" 
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Platform Role <span class="required">*</span></label>
+            <select [(ngModel)]="staffForm.role" name="role" required class="form-input">
+              <option value="doctor">Doctor / Consultant</option>
+              <option value="nurse">Ward / ICU Nurse</option>
+              <option value="pharmacist">Pharmacist</option>
+              <option value="lab">Lab Technician</option>
+              <option value="receptionist">Receptionist</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Assigned Department</label>
+            <select [(ngModel)]="staffForm.department_id" name="department_id" class="form-input">
+              <option value="">-- None / General --</option>
+              <option *ngFor="let d of departments()" [value]="d.id">
+                {{ d.name }} ({{ d.code }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Specialty / Sub-unit</label>
+            <input 
+              type="text" 
+              [(ngModel)]="staffForm.specialty" 
+              name="specialty" 
+              placeholder="e.g. Pediatric Cardiology, ICU Ward" 
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Employee ID</label>
+            <input 
+              type="text" 
+              [(ngModel)]="staffForm.employee_id" 
+              name="employee_id" 
+              placeholder="e.g. EMP-204" 
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="!isEditMode()">
+          <label class="form-label">Initial Access Password (Optional)</label>
+          <input 
+            type="password" 
+            [(ngModel)]="staffForm.password" 
+            name="password" 
+            placeholder="Default: role_medisync (e.g. doctor_medisync)" 
+            class="form-input"
+          />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting() || !staffForm.name || !staffForm.email">
+            {{ isSubmitting() ? 'Saving...' : (isEditMode() ? 'Update Staff Member' : 'Create Staff Member') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Staff Confirmation Modal -->
+  <div class="modal-backdrop" *ngIf="staffToDelete()">
+    <div class="modal-card modal-delete animate-scale">
+      <div class="modal-header">
+        <h2 class="modal-title text-danger">Delete Staff Member</h2>
+        <button class="modal-close-btn" (click)="staffToDelete.set(null)">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to remove <strong>{{ staffToDelete()?.name }}</strong> ({{ staffToDelete()?.email }})?</p>
+        <p class="modal-warning-subtext">This user's account and login access will be permanently revoked from this hospital workspace.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="staffToDelete.set(null)">Cancel</button>
+        <button type="button" class="btn-danger-confirm" [disabled]="isSubmitting()" (click)="deleteStaff()">
+          {{ isSubmitting() ? 'Deleting...' : 'Delete Staff Member' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

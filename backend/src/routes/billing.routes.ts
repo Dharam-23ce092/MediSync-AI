@@ -172,6 +172,27 @@ router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), a
       [newPaid, newBalance, newStatus, id]
     );
 
+    // Propagate Case Lifecycle Completion
+    const billInfo = await client.query('SELECT case_id FROM billing WHERE id = $1', [id]);
+    const caseId = billInfo.rows[0]?.case_id;
+    if (caseId) {
+      if (newStatus === 'PAID') {
+        await client.query(
+          "UPDATE cases SET status = 'closed', discharge_date = NOW(), updated_at = NOW() WHERE id = $1",
+          [caseId]
+        );
+        await client.query(
+          "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+          [`CT_${Date.now()}`, caseId, 'payment_received', req.user?.userId, req.user?.role, `Invoice fully settled via ${paymentMethod}. Case file closed.`]
+        );
+      } else {
+        await client.query(
+          "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
+          [`CT_${Date.now()}`, caseId, 'payment_received', req.user?.userId, req.user?.role, `Partial payment of ₹${amount} received via ${paymentMethod}.`]
+        );
+      }
+    }
+
     await client.query('COMMIT');
 
     await logAudit(req, `PAYMENT_PROCESSED: Paid ${amount} via ${paymentMethod} on Invoice ${id}`, 'billing', 'info');

@@ -1,0 +1,271 @@
+<div class="landing-container">
+  <!-- Navigation Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon-svg">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+        <span class="logo-text">MediSync<span class="highlight">-AI</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#onboarding">Onboarding</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="auth-buttons">
+        <button class="btn btn-outline" (click)="navigateToLogin()">Sign In</button>
+        <button class="btn btn-primary" (click)="navigateToRegisterHospital()">Register Hospital</button>
+        
+        <!-- Sleek Theme Toggle Button -->
+        <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" [attr.aria-label]="themeService.isLight() ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          <svg *ngIf="themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg *ngIf="!themeService.isLight()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-container">
+      <!-- Hero Left: Copy & Actions -->
+      <div class="hero-left animate-slide-up">
+        <div class="hero-badge">
+          <span class="badge-dot"></span> Next-Gen Centralized EHR Engine v2.0
+        </div>
+        <h1 class="hero-title">Unified Clinical Workspace for Modern Hospitals</h1>
+        <p class="hero-subtitle">
+          Secure, multi-tenant SaaS connecting administrators, physicians, ward nurses, pharmacists, lab techs, and patients in one synchronized healthcare ecosystem.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-large" (click)="navigateToRegisterHospital()">Start Hospital Onboarding</button>
+          <button class="btn btn-secondary btn-large" (click)="navigateToRegisterPatient()">Patient Self-Registration</button>
+        </div>
+      </div>
+
+      <!-- Hero Right: Interactive Dashboard Visual Mockup -->
+      <div class="hero-right animate-slide-right">
+        <div class="mockup-card">
+          <div class="mockup-header">
+            <div class="mockup-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="mockup-title">Your Hospital's Command Center</div>
+          </div>
+          <div class="mockup-body">
+            <!-- Active Vitals Widget -->
+            <div class="mockup-widget">
+              <div class="widget-header">
+                <span class="widget-icon">⚡</span>
+                <span class="widget-lbl">Live Hospital Occupancy</span>
+              </div>
+              <div class="widget-value-row">
+                <span class="widget-val">84%</span>
+                <span class="widget-trend positive">↑ 4.2% today</span>
+              </div>
+              <div class="widget-progress-bg">
+                <div class="widget-progress-fill" style="width: 84%;"></div>
+              </div>
+            </div>
+
+            <!-- Patient List Tracker Widget -->
+            <div class="mockup-widget mt-sm">
+              <div class="widget-header">
+                <span class="widget-lbl">Recent Admissions & Timeline</span>
+              </div>
+              <div class="mockup-list">
+                <div class="mockup-item">
+                  <div class="item-circle doc">DP</div>
+                  <div class="item-info">
+                    <span class="item-name">Rahul Kumar Patel</span>
+                    <span class="item-sub">Cardiology • Case registered</span>
+                  </div>
+                  <span class="item-tag tag-blue">OPD</span>
+                </div>
+                <div class="mockup-item">
+                  <div class="item-circle nurse">AM</div>
+                  <div class="item-info">
+                    <span class="item-name">Priya Mehta</span>
+                    <span class="item-sub">ICU Bed #402 • Vitals normal</span>
+                  </div>
+                  <span class="item-tag tag-green">IPD</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Vitals Audit Logs -->
+            <div class="mockup-widget mt-sm">
+              <div class="widget-header">
+                <span class="widget-lbl">🔒 System Audit & Security logs</span>
+              </div>
+              <ul class="mockup-logs">
+                <li><span class="log-dot"></span> [12:14 PM] Doctor consultation SOAP note logged</li>
+                <li><span class="log-dot"></span> [11:58 AM] Lab sample barcode scanned by lab tech</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section id="features" class="features-section">
+    <div class="section-header">
+      <h2 class="section-title">Designed for Every Clinical Role</h2>
+      <p class="section-subtitle">Streamlined workspaces tailored specifically to hospital roles with real-time transactional synchronization.</p>
+    </div>
+    <div class="features-grid">
+      <!-- Admin Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h3>Hospital Administration</h3>
+        <p>Complete hospital operational dashboard. Audit bed occupancy levels, manage billing logs, and inspect HIPAA-compliant activity audit trails stored securely.</p>
+      </div>
+      <!-- Doctor Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+        </div>
+        <h3>Clinician Workspace</h3>
+        <p>Manage OPD queues, record digital SOAP consultation notes, issue e-prescriptions, and submit lab orders instantly. Query patient medical history with a RAG AI Assistant.</p>
+      </div>
+      <!-- Nurse Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+        </div>
+        <h3>Ward & Vitals Tracker</h3>
+        <p>Real-time inpatient monitoring. Record temperature, heart rate, BP, and blood oxygen levels, with automated warning triggers for patients in critical state.</p>
+      </div>
+      <!-- Pharmacist Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4.5" y1="19.5" x2="19.5" y2="4.5"></line>
+            <path d="M15 2.5A3.5 3.5 0 0 1 20 7.5L7.5 20A3.5 3.5 0 0 1 2.5 15L15 2.5z"></path>
+          </svg>
+        </div>
+        <h3>Pharmacy Center</h3>
+        <p>Dispense pending doctor prescriptions, monitor medication stock alerts, and toggle prescription states with automated financial tracking integrations.</p>
+      </div>
+      <!-- Lab Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 3h12M12 3v15M9 18h6M5 21h14"></path>
+          </svg>
+        </div>
+        <h3>Lab Diagnostics</h3>
+        <p>Process specimen collections, track test requests, and publish numerical lab outputs. Instantly notify doctors when results are ready.</p>
+      </div>
+      <!-- Patient Card -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3>Patient Care Portal</h3>
+        <p>Enable patients to book doctor appointments, view active prescription files, retrieve certified lab test results, and clear pending invoices online.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Onboarding Flow Section -->
+  <section id="onboarding" class="onboarding-section">
+    <div class="section-header">
+      <h2 class="section-title">Frictionless Facility Onboarding</h2>
+      <p class="section-subtitle">Provision your hospital infrastructure and configure your staff directory in minutes.</p>
+    </div>
+    <div class="steps-container">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h4>Register Hospital</h4>
+        <p>Register your hospital licensing credentials, address profile, and initial administrator user account.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h4>Import Staff Directory</h4>
+        <p>Upload a standard CSV file of your hospital staff (doctors, nurses, technicians) to instantly provision their logins.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h4>Go Live</h4>
+        <p>Employees log in using secure hospital domains while patients register using personal Gmail accounts to link up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Plans -->
+  <section id="pricing" class="pricing-section">
+    <div class="section-header">
+      <h2 class="section-title">Flexible Pricing Plans</h2>
+      <p class="section-subtitle">Scale your EHR infrastructure according to your hospital's operational needs.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- Basic -->
+      <div class="pricing-card">
+        <h3>Standard Plan</h3>
+        <div class="price">$199<span>/month</span></div>
+        <p class="plan-desc">For private clinics and small diagnostic centers.</p>
+        <ul class="plan-features">
+          <li><span class="check-bullet">✓</span> Up to 15 Staff Members</li>
+          <li><span class="check-bullet">✓</span> 1 Hospital Domain mapping</li>
+          <li><span class="check-bullet">✓</span> OPD Queue & Consultation Logs</li>
+          <li><span class="check-bullet">✓</span> Local Database Support</li>
+        </ul>
+        <button class="btn btn-outline" (click)="navigateToRegisterHospital()">Select Plan</button>
+      </div>
+      <!-- Professional -->
+      <div class="pricing-card professional">
+        <div class="ribbon">POPULAR</div>
+        <h3>Professional Plan</h3>
+        <div class="price">$499<span>/month</span></div>
+        <p class="plan-desc">For regional and medium-sized hospital networks.</p>
+        <ul class="plan-features">
+          <li><span class="check-bullet">✓</span> Up to 100 Staff Members</li>
+          <li><span class="check-bullet">✓</span> Multidepartment Scheduling</li>
+          <li><span class="check-bullet">✓</span> IPD Bed Management Wards</li>
+          <li><span class="check-bullet">✓</span> Automated HIPAA Audit Trail</li>
+          <li><span class="check-bullet">✓</span> Basic AI Assistant Integration</li>
+        </ul>
+        <button class="btn btn-primary" (click)="navigateToRegisterHospital()">Select Plan</button>
+      </div>
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <h3>Enterprise Networks</h3>
+        <div class="price">Custom</div>
+        <p class="plan-desc">For multi-specialty chains and medical institutions.</p>
+        <ul class="plan-features">
+          <li><span class="check-bullet">✓</span> Unlimited Staff & Doctors</li>
+          <li><span class="check-bullet">✓</span> Multi-facility Tenant Scoping</li>
+          <li><span class="check-bullet">✓</span> Dedicated Database instances</li>
+          <li><span class="check-bullet">✓</span> Deep RAG Chatbot Integration</li>
+          <li><span class="check-bullet">✓</span> 24/7 Priority Support SLAs</li>
+        </ul>
+        <button class="btn btn-outline" (click)="navigateToRegisterHospital()">Contact Sales</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 MediSync-AI. All rights reserved. HIPAA Compliant EHR SaaS Platform.</p>
+  </footer>
+</div>
