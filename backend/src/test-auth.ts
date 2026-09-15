@@ -70,27 +70,27 @@ const runTests = async () => {
   // ═══════════════ LOGIN ALL ROLES ═══════════════
   console.log('── LOGIN ALL SEEDED ROLES ──');
 
-  const adminLogin = await login('admin@medisync.local', 'admin_medisync');
+  const adminLogin = await login('admin@zydus.org', 'admin_medisync');
   assert('Admin login succeeds (200)', adminLogin.status === 200 && adminLogin.body.success === true);
   adminToken = adminLogin.body.data?.token;
 
-  const doctorLogin = await login('doctor@medisync.local', 'doctor_medisync');
+  const doctorLogin = await login('doctor@zydus.org', 'doctor_medisync');
   assert('Doctor login succeeds (200)', doctorLogin.status === 200);
   doctorToken = doctorLogin.body.data?.token;
 
-  const nurseLogin = await login('nurse@medisync.local', 'nurse_medisync');
+  const nurseLogin = await login('nurse@zydus.org', 'nurse_medisync');
   assert('Nurse login succeeds (200)', nurseLogin.status === 200);
   nurseToken = nurseLogin.body.data?.token;
 
-  const patientLogin = await login('patient@medisync.local', 'patient_medisync');
+  const patientLogin = await login('patient@zydus.org', 'patient_medisync');
   assert('Patient login succeeds (200)', patientLogin.status === 200);
   patientToken = patientLogin.body.data?.token;
 
-  const pharmacistLogin = await login('pharmacist@medisync.local', 'pharmacist_medisync');
+  const pharmacistLogin = await login('pharmacist@zydus.org', 'pharmacist_medisync');
   assert('Pharmacist login succeeds (200)', pharmacistLogin.status === 200);
   pharmacistToken = pharmacistLogin.body.data?.token;
 
-  const labLogin = await login('lab@medisync.local', 'lab_medisync');
+  const labLogin = await login('lab@zydus.org', 'lab_medisync');
   assert('Lab login succeeds (200)', labLogin.status === 200);
   labToken = labLogin.body.data?.token;
 

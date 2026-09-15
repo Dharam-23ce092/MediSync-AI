@@ -6,16 +6,7 @@ import { BaseModal } from '../../shared/components/base-modal/base-modal.compone
 import { FormsModule } from '@angular/forms';
 import { PrescriptionService } from '../../core/services/prescription.service';
 import { DashboardService } from '../../core/services/dashboard.service';
-
-interface PrescriptionOrder {
-  id: string;
-  name: string;
-  name_subtitle: string;
-  doctor: string;
-  drugDetails: string;
-  status: 'Pending' | 'Verifying' | 'Dispensed';
-  date: string;
-}
+import { InventoryService, InventoryItem } from '../../core/services/inventory.service';
 
 interface InventoryDrug {
   id: string;
@@ -85,8 +76,8 @@ interface InventoryDrug {
         <app-base-card [border]="true" elevation="sm">
           <div class="metric-card-content" card-body>
             <div class="metric-label">Expiring Batches (30d)</div>
-            <h3 class="metric-value">—</h3>
-            <span class="metric-trend neutral">Awaiting inventory API</span>
+            <h3 class="metric-value">{{ dashboardService.pharmacistMetricsData()?.expiringBatches ?? 0 }}</h3>
+            <span class="metric-trend neutral">Monitored</span>
           </div>
         </app-base-card>
       </div>
@@ -466,12 +457,12 @@ export class PharmacistDashboard implements OnInit {
       ]
     }
   ];
-
   protected prescriptionService = inject(PrescriptionService);
   protected dashboardService = inject(DashboardService);
+  protected inventoryService = inject(InventoryService);
 
   ordersData = computed(() => this.prescriptionService.prescriptions() as any[]);
-  inventoryData = signal<InventoryDrug[]>([]);
+  inventoryData = computed(() => this.inventoryService.items());
 
   // Modal Verification states
   selectedOrder = signal<any | null>(null);
@@ -486,6 +477,7 @@ export class PharmacistDashboard implements OnInit {
 
   ngOnInit() {
     void this.prescriptionService.loadPrescriptions();
+    void this.inventoryService.loadInventory();
     void this.dashboardService.loadForRole('pharmacist');
   }
 
@@ -497,9 +489,16 @@ export class PharmacistDashboard implements OnInit {
     }
   }
 
-  onInventoryAction(event: { action: string, row: InventoryDrug }) {
+  async onInventoryAction(event: { action: string, row: any }) {
     if (event.action === 'reorder') {
-      console.log('Inventory reorder API not yet implemented.');
+      try {
+        const msg = await this.inventoryService.requestReorder(event.row.id);
+        this.dispenseSuccess.set(msg);
+        setTimeout(() => this.dispenseSuccess.set(null), 4000);
+      } catch {
+        this.dispenseError.set('Failed to submit reorder request.');
+        setTimeout(() => this.dispenseError.set(null), 4000);
+      }
     }
   }
 

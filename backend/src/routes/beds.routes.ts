@@ -6,16 +6,25 @@ import { logAudit } from '../utils/audit';
 
 const router = Router();
 
-// Get all beds
+// Get all beds with extended patient details
 router.get('/', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse']), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query = `
       SELECT b.id, b.name, b.type, b.status,
              p.name as "patientName", p.uhid,
-             u.name as "assignedDoctor"
+             p.age, p.gender, p.blood_group as "bloodGroup", p.allergies,
+             u.name as "assignedDoctor",
+             c.case_number as "caseNumber", c.diagnosis, c.chief_complaint as "chiefComplaint"
       FROM beds b
       LEFT JOIN patients p ON p.id = b.patient_id
       LEFT JOIN users u ON u.id = b.assigned_doctor_id
+      LEFT JOIN LATERAL (
+        SELECT case_number, diagnosis, chief_complaint
+        FROM cases
+        WHERE patient_id = b.patient_id AND status != 'closed'
+        ORDER BY created_at DESC
+        LIMIT 1
+      ) c ON true
       ORDER BY b.id::int ASC
     `;
     const result = await pool.query(query);

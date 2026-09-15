@@ -12,6 +12,13 @@ export interface Bed {
   patientName?: string;
   uhid?: string;
   assignedDoctor?: string;
+  age?: number;
+  gender?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  caseNumber?: string;
+  diagnosis?: string;
+  chiefComplaint?: string;
 }
 
 interface BackendBed {
@@ -22,6 +29,13 @@ interface BackendBed {
   patientName?: string;
   uhid?: string;
   assignedDoctor?: string;
+  age?: number;
+  gender?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  caseNumber?: string;
+  diagnosis?: string;
+  chiefComplaint?: string;
 }
 
 interface BedsListResponse {
@@ -43,7 +57,14 @@ function mapBed(raw: BackendBed): Bed {
     status: raw.status,
     patientName: raw.patientName,
     uhid: raw.uhid,
-    assignedDoctor: raw.assignedDoctor
+    assignedDoctor: raw.assignedDoctor,
+    age: raw.age,
+    gender: raw.gender,
+    bloodGroup: raw.bloodGroup,
+    allergies: raw.allergies,
+    caseNumber: raw.caseNumber,
+    diagnosis: raw.diagnosis,
+    chiefComplaint: raw.chiefComplaint
   };
 }
 

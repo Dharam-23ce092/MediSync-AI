@@ -7,16 +7,7 @@ import { BaseModal } from '../../shared/components/base-modal/base-modal.compone
 import { FormsModule } from '@angular/forms';
 import { VitalsService, PatientVital } from '../../core/services/vitals.service';
 import { DashboardService } from '../../core/services/dashboard.service';
-
-interface NurseTask {
-  id: string;
-  bed: string;
-  patient: string;
-  task: string;
-  time: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-}
+import { NurseTaskService, NurseTask } from '../../core/services/nurse-task.service';
 
 @Component({
   selector: 'app-nurse-dashboard',
@@ -61,7 +52,7 @@ interface NurseTask {
               [currentPage]="1"
               [showSearch]="true"
               [showPagination]="false"
-              [loading]="vitalsService.loading()"
+              [loading]="vitalsService.loading() && vitalsService.vitals().length === 0"
               searchPlaceholder="Search by patient name or bed..."
               (actionClick)="onTelemetryAction($event)"
             ></app-base-table>
@@ -336,12 +327,14 @@ interface NurseTask {
       border-color: var(--color-border-hover);
     }
     .telemetry-alert-card.critical {
-      background-color: var(--color-bg-base);
-      border: 1px solid var(--color-border);
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, var(--color-bg-base) 70%);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-left: 4px solid #ef4444;
     }
     .telemetry-alert-card.warning {
-      background-color: var(--color-bg-base);
-      border: 1px solid var(--color-border);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, var(--color-bg-base) 70%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-left: 4px solid #f59e0b;
     }
     .alert-header-row {
       display: flex;
@@ -349,8 +342,8 @@ interface NurseTask {
       font-size: 11px;
       font-weight: 700;
     }
-    .telemetry-alert-card.critical .alert-source { color: var(--color-critical); }
-    .telemetry-alert-card.warning .alert-source { color: var(--color-urgent); }
+    .telemetry-alert-card.critical .alert-source { color: #f87171; font-weight: 700; }
+    .telemetry-alert-card.warning .alert-source { color: #fbbf24; font-weight: 700; }
     .alert-time { color: var(--color-text-muted); }
     .alert-desc {
       font-size: 12px;
@@ -518,7 +511,8 @@ export class NurseDashboard implements OnInit {
   ];
 
   patientsData = computed(() => this.vitalsService.vitals());
-  tasks = signal<NurseTask[]>([]);
+  protected nurseTaskService = inject(NurseTaskService);
+  tasks = computed(() => this.nurseTaskService.tasks());
 
   selectedPatient = signal<PatientVital | null>(null);
   isModalOpen = signal<boolean>(false);
@@ -535,14 +529,13 @@ export class NurseDashboard implements OnInit {
   protected dashboardService = inject(DashboardService);
 
   ngOnInit() {
-    void this.vitalsService.loadVitals();
+    void this.vitalsService.loadVitals(true);
+    void this.nurseTaskService.loadTasks(true);
     void this.dashboardService.loadForRole('nurse');
   }
 
   toggleTask(taskId: string) {
-    this.tasks.update(list =>
-      list.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
-    );
+    void this.nurseTaskService.toggleTask(taskId);
   }
 
   criticalVitalsList = computed(() => {

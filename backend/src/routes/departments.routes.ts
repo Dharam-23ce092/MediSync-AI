@@ -21,12 +21,11 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
         d.description,
         COUNT(DISTINCT u.id) as staff_count,
         COUNT(DISTINCT doc.id) as doctors_count,
-        COUNT(DISTINCT b.id) as beds_count,
-        COUNT(DISTINCT CASE WHEN b.status = 'Occupied' THEN b.id END) as occupied_beds_count
+        0 as beds_count,
+        0 as occupied_beds_count
       FROM departments d
       LEFT JOIN users u ON u.department_id = d.id AND u.is_active = true
       LEFT JOIN doctors doc ON doc.department_id = d.id
-      LEFT JOIN beds b ON b.department_id = d.id
       WHERE d.hospital_id = $1 OR d.hospital_id IS NULL
       GROUP BY d.id, d.hospital_id, d.name, d.code, d.description
       ORDER BY d.name ASC

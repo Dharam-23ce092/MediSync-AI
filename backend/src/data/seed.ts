@@ -12,6 +12,16 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const connectionString = process.env.DATABASE_URL || 'postgresql://medisync:medisync_secret@localhost:5432/medisync_db';
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/medisync_logs';
 
+// Helper: get today's date string
+const todayStr = () => new Date().toISOString().split('T')[0];
+
+// Helper: get a Date for today at a specific hour
+const todayAt = (hour: number, minute = 0) => {
+  const d = new Date();
+  d.setHours(hour, minute, 0, 0);
+  return d;
+};
+
 const seed = async () => {
   console.log('Seeding databases...');
 
@@ -24,7 +34,7 @@ const seed = async () => {
 
     // Clear PostgreSQL tables safely
     console.log('Cleaning PostgreSQL database...');
-    await pgClient.query('TRUNCATE TABLE payments, invoice_items, billing, lab_orders, prescriptions, beds, appointments, case_timeline, cases, doctors, users, patients, departments, hospitals CASCADE');
+    await pgClient.query('TRUNCATE TABLE nurse_tasks, inventory, payments, invoice_items, billing, lab_orders, prescriptions, beds, appointments, case_timeline, cases, doctors, users, patients, departments, hospitals CASCADE');
 
     // 2. Clear MongoDB collections
     console.log('Cleaning MongoDB collections...');
@@ -70,15 +80,21 @@ const seed = async () => {
       );
     }
 
-    // 4. Seed Users
+    // 4. Seed Users (migrated to @zydus.org)
     console.log('Seeding users...');
     const users = [
-      { id: 'U1001', email: 'admin@medisync.local', password_hash: adminHash, name: 'Rajesh Iyer', role: 'admin', specialty: 'Hospital Administration', department_id: 'D3', employee_id: 'EMP-001' },
-      { id: 'U1002', email: 'doctor@medisync.local', password_hash: doctorHash, name: 'Dr. Devam Patel', role: 'doctor', specialty: 'Cardiology (MD, DM)', department_id: 'D1', employee_id: 'EMP-002' },
-      { id: 'U1003', email: 'nurse@medisync.local', password_hash: nurseHash, name: 'Sister Ananya Sharma', role: 'nurse', specialty: 'ICU Critical Care', department_id: 'D6', employee_id: 'EMP-003' },
-      { id: 'U1004', email: 'patient@medisync.local', password_hash: patientHash, name: 'Rahul Kumar Patel', role: 'patient', specialty: null, department_id: null, employee_id: null },
-      { id: 'U1005', email: 'pharmacist@medisync.local', password_hash: pharmacistHash, name: 'Amit Verma', role: 'pharmacist', specialty: 'Pharmacology', department_id: 'D5', employee_id: 'EMP-004' },
-      { id: 'U1006', email: 'lab@medisync.local', password_hash: labHash, name: 'Dr. Sunita Rao', role: 'lab', specialty: 'Clinical Pathology', department_id: 'D4', employee_id: 'EMP-005' }
+      { id: 'U1001', email: 'admin@zydus.org', password_hash: adminHash, name: 'Rajesh Iyer', role: 'admin', specialty: 'Hospital Administration', department_id: 'D3', employee_id: 'EMP-001' },
+      { id: 'U1002', email: 'doctor@zydus.org', password_hash: doctorHash, name: 'Dr. Devam Patel', role: 'doctor', specialty: 'Cardiology (MD, DM)', department_id: 'D1', employee_id: 'EMP-002' },
+      { id: 'U1003', email: 'nurse@zydus.org', password_hash: nurseHash, name: 'Sister Ananya Sharma', role: 'nurse', specialty: 'ICU Critical Care', department_id: 'D6', employee_id: 'EMP-003' },
+      { id: 'U1004', email: 'patient@zydus.org', password_hash: patientHash, name: 'Rahul Kumar Patel', role: 'patient', specialty: null, department_id: null, employee_id: null },
+      { id: 'U1005', email: 'pharmacist@zydus.org', password_hash: pharmacistHash, name: 'Amit Verma', role: 'pharmacist', specialty: 'Pharmacology', department_id: 'D5', employee_id: 'EMP-004' },
+      { id: 'U1006', email: 'lab@zydus.org', password_hash: labHash, name: 'Dr. Sunita Rao', role: 'lab', specialty: 'Clinical Pathology', department_id: 'D4', employee_id: 'EMP-005' },
+      // Also seed named aliases so both formats work seamlessly
+      { id: 'U1007', email: 'doctor.patel@zydus.org', password_hash: doctorHash, name: 'Dr. Devam Patel', role: 'doctor', specialty: 'Cardiology (MD, DM)', department_id: 'D1', employee_id: 'EMP-007' },
+      { id: 'U1008', email: 'nurse.anita@zydus.org', password_hash: nurseHash, name: 'Sister Ananya Sharma', role: 'nurse', specialty: 'ICU Critical Care', department_id: 'D6', employee_id: 'EMP-008' },
+      { id: 'U1009', email: 'pharmacist.rahul@zydus.org', password_hash: pharmacistHash, name: 'Amit Verma', role: 'pharmacist', specialty: 'Pharmacology', department_id: 'D5', employee_id: 'EMP-009' },
+      { id: 'U1010', email: 'lab.priya@zydus.org', password_hash: labHash, name: 'Dr. Sunita Rao', role: 'lab', specialty: 'Clinical Pathology', department_id: 'D4', employee_id: 'EMP-010' },
+      { id: 'U1011', email: 'patient.aarav@zydus.org', password_hash: patientHash, name: 'Aarav Mehta', role: 'patient', specialty: null, department_id: null, employee_id: null }
     ];
 
     for (const u of users) {
@@ -99,7 +115,7 @@ const seed = async () => {
     console.log('Seeding patients...');
     const patients = [
       { id: 'P1001', user_id: 'U1004', uhid: 'UHID-2026-981240', name: 'Rahul Kumar Patel', age: 45, gender: 'Male', blood_group: 'B+ve', emergency_contact: '+91 98765 12345', allergies: 'Penicillin, Peanuts', status: 'OPD' },
-      { id: 'P1002', user_id: null, uhid: 'UHID-2026-102', name: 'Aarav Mehta', age: 62, gender: 'Male', blood_group: 'O+ve', emergency_contact: '+91 98765 23456', allergies: null, status: 'IPD' },
+      { id: 'P1002', user_id: 'U1011', uhid: 'UHID-2026-102', name: 'Aarav Mehta', age: 62, gender: 'Male', blood_group: 'O+ve', emergency_contact: '+91 98765 23456', allergies: null, status: 'IPD' },
       { id: 'P1003', user_id: null, uhid: 'UHID-2026-103', name: 'Priya Sharma', age: 31, gender: 'Female', blood_group: 'A-ve', emergency_contact: '+91 98765 34567', allergies: 'Sulfa drugs', status: 'OPD' },
       { id: 'P1004', user_id: null, uhid: 'UHID-2026-104', name: 'Meera Sen', age: 56, gender: 'Female', blood_group: 'B-ve', emergency_contact: '+91 98765 45678', allergies: null, status: 'OPD' },
       { id: 'P1005', user_id: null, uhid: 'UHID-2026-105', name: 'Vikram Singh', age: 28, gender: 'Male', blood_group: 'AB+ve', emergency_contact: '+91 98765 56789', allergies: 'Ibuprofen', status: 'Discharged' },
@@ -116,12 +132,15 @@ const seed = async () => {
 
     // 6.5 Seed Cases (Patient Case Lifecycles)
     console.log('Seeding patient cases...');
+    const today = todayStr();
     const cases = [
       { id: 'C101', patient_id: 'P1001', case_number: 'CASE-2026-001', type: 'OPD', status: 'prescription_issued', chief_complaint: 'Hypertension follow-up', diagnosis: 'Essential Hypertension' },
       { id: 'C102', patient_id: 'P1002', case_number: 'CASE-2026-002', type: 'IPD', status: 'lab_complete', chief_complaint: 'Chest pain and discomfort', diagnosis: 'Coronary Artery Disease' },
       { id: 'C103', patient_id: 'P1003', case_number: 'CASE-2026-003', type: 'OPD', status: 'in_consultation', chief_complaint: 'High fever and cold', diagnosis: 'Acute viral infection' },
       { id: 'C104', patient_id: 'P1004', case_number: 'CASE-2026-004', type: 'OPD', status: 'lab_pending', chief_complaint: 'Routine blood screening checkup', diagnosis: 'Hyperlipidemia' },
-      { id: 'C105', patient_id: 'P1005', case_number: 'CASE-2026-005', type: 'OPD', status: 'closed', chief_complaint: 'Ankle sprain during running', diagnosis: 'Ankle Sprain Grade I' }
+      { id: 'C105', patient_id: 'P1005', case_number: 'CASE-2026-005', type: 'OPD', status: 'closed', chief_complaint: 'Ankle sprain during running', diagnosis: 'Ankle Sprain Grade I' },
+      { id: 'C106', patient_id: 'P1006', case_number: 'CASE-2026-006', type: 'IPD', status: 'in_consultation', chief_complaint: 'Breathlessness and fatigue', diagnosis: 'Congestive Heart Failure' },
+      { id: 'C107', patient_id: 'P1004', case_number: 'CASE-2026-007', type: 'OPD', status: 'prescription_issued', chief_complaint: 'Persistent headaches', diagnosis: 'Tension-type Headache' }
     ];
 
     for (const c of cases) {
@@ -143,14 +162,15 @@ const seed = async () => {
       }
     }
 
-    // 7. Seed Appointments
+    // 7. Seed Appointments (using today's date)
     console.log('Seeding appointments...');
     const appointments = [
-      { id: 'A01', case_id: 'C103', patient_id: 'P1003', doctor_id: 'U1002', token: '20', appointment_time: new Date('2026-08-16 09:45:00'), type: 'Follow-up', status: 'In Consultation' },
-      { id: 'A02', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', token: '21', appointment_time: new Date('2026-08-16 10:00:00'), type: 'New', status: 'Checked-in' },
-      { id: 'A03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', token: '22', appointment_time: new Date('2026-08-16 10:15:00'), type: 'Emergency', status: 'Checked-in' },
-      { id: 'A04', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', token: '24', appointment_time: new Date('2026-08-16 10:45:00'), type: 'New', status: 'Waiting' },
-      { id: 'A05', case_id: 'C105', patient_id: 'P1005', doctor_id: 'U1002', token: '25', appointment_time: new Date('2026-08-16 11:00:00'), type: 'Follow-up', status: 'Waiting' }
+      { id: 'A01', case_id: 'C103', patient_id: 'P1003', doctor_id: 'U1002', token: '20', appointment_time: todayAt(9, 45), type: 'Follow-up', status: 'In Consultation' },
+      { id: 'A02', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', token: '21', appointment_time: todayAt(10, 0), type: 'New', status: 'Checked-in' },
+      { id: 'A03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', token: '22', appointment_time: todayAt(10, 15), type: 'Emergency', status: 'Checked-in' },
+      { id: 'A04', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', token: '24', appointment_time: todayAt(10, 45), type: 'New', status: 'Waiting' },
+      { id: 'A05', case_id: 'C105', patient_id: 'P1005', doctor_id: 'U1002', token: '25', appointment_time: todayAt(11, 0), type: 'Follow-up', status: 'Waiting' },
+      { id: 'A06', case_id: 'C106', patient_id: 'P1006', doctor_id: 'U1002', token: '26', appointment_time: todayAt(11, 30), type: 'Emergency', status: 'Waiting' }
     ];
 
     for (const appt of appointments) {
@@ -184,12 +204,14 @@ const seed = async () => {
       );
     }
 
-    // 9. Seed Prescriptions
+    // 9. Seed Prescriptions (using today's date)
     console.log('Seeding prescriptions...');
     const prescriptions = [
-      { id: 'O01', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', drug_details: 'Telmisartan 40mg + Metformin 500mg SR', status: 'Pending', date: '2026-08-15' },
-      { id: 'O02', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', drug_details: 'Tab. Atorvastatin 10mg dosage', status: 'Pending', date: '2026-08-15' },
-      { id: 'O03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', drug_details: 'Tab. Paracetamol 650mg SOS', status: 'Dispensed', date: '2026-08-15' }
+      { id: 'O01', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', drug_details: 'Telmisartan 40mg + Metformin 500mg SR', status: 'Pending', date: today },
+      { id: 'O02', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', drug_details: 'Tab. Atorvastatin 10mg dosage', status: 'Pending', date: today },
+      { id: 'O03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', drug_details: 'Tab. Paracetamol 650mg SOS', status: 'Dispensed', date: today },
+      { id: 'O04', case_id: 'C106', patient_id: 'P1006', doctor_id: 'U1002', drug_details: 'Tab. Furosemide 40mg + Digoxin 0.25mg', status: 'Pending', date: today },
+      { id: 'O05', case_id: 'C107', patient_id: 'P1004', doctor_id: 'U1002', drug_details: 'Tab. Sumatriptan 50mg SOS', status: 'Pending', date: today }
     ];
 
     for (const rx of prescriptions) {
@@ -199,12 +221,14 @@ const seed = async () => {
       );
     }
 
-    // 10. Seed Lab Orders
+    // 10. Seed Lab Orders (using today's date)
     console.log('Seeding lab orders...');
     const labOrders = [
-      { id: 'L01', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', test_name: 'Complete Blood Count (CBC Panel)', specimen: 'Blood (EDTA Purple Vial)', status: 'Collected', date: '2026-08-15' },
-      { id: 'L02', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', test_name: 'Lipid Profile Screen', specimen: 'Blood (Gel Yellow Vial)', status: 'Collected', date: '2026-08-15' },
-      { id: 'L03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', test_name: 'Complete Blood Count (CBC Panel)', specimen: 'Blood (EDTA Purple Vial)', status: 'Completed', date: '2026-08-15' }
+      { id: 'L01', case_id: 'C101', patient_id: 'P1001', doctor_id: 'U1002', test_name: 'Complete Blood Count (CBC Panel)', specimen: 'Blood (EDTA Purple Vial)', status: 'Collected', date: today },
+      { id: 'L02', case_id: 'C104', patient_id: 'P1004', doctor_id: 'U1002', test_name: 'Lipid Profile Screen', specimen: 'Blood (Gel Yellow Vial)', status: 'Collected', date: today },
+      { id: 'L03', case_id: 'C102', patient_id: 'P1002', doctor_id: 'U1002', test_name: 'Complete Blood Count (CBC Panel)', specimen: 'Blood (EDTA Purple Vial)', status: 'Completed', date: today },
+      { id: 'L04', case_id: 'C106', patient_id: 'P1006', doctor_id: 'U1002', test_name: 'Troponin-I Cardiac Marker', specimen: 'Blood (Gel Yellow Vial)', status: 'Received', date: today },
+      { id: 'L05', case_id: 'C103', patient_id: 'P1003', doctor_id: 'U1002', test_name: 'Liver Function Test (LFT Panel)', specimen: 'Blood (Gel Yellow Vial)', status: 'Received', date: today }
     ];
 
     for (const lo of labOrders) {
@@ -219,7 +243,8 @@ const seed = async () => {
     const bills = [
       { id: 'B001', case_id: 'C101', patient_id: 'P1001', invoice_number: 'INV-2026-001', subtotal: 1500.00, discount: 100.00, tax: 252.00, total: 1652.00, paid: 0.00, balance: 1652.00, status: 'PENDING' },
       { id: 'B002', case_id: 'C102', patient_id: 'P1002', invoice_number: 'INV-2026-002', subtotal: 4500.00, discount: 500.00, tax: 720.00, total: 4720.00, paid: 4720.00, balance: 0.00, status: 'PAID' },
-      { id: 'B003', case_id: 'C103', patient_id: 'P1003', invoice_number: 'INV-2026-003', subtotal: 800.00, discount: 0.00, tax: 144.00, total: 944.00, paid: 500.00, balance: 444.00, status: 'PARTIAL' }
+      { id: 'B003', case_id: 'C103', patient_id: 'P1003', invoice_number: 'INV-2026-003', subtotal: 800.00, discount: 0.00, tax: 144.00, total: 944.00, paid: 500.00, balance: 444.00, status: 'PARTIAL' },
+      { id: 'B004', case_id: 'C106', patient_id: 'P1006', invoice_number: 'INV-2026-004', subtotal: 8500.00, discount: 1000.00, tax: 1350.00, total: 8850.00, paid: 3000.00, balance: 5850.00, status: 'PARTIAL' }
     ];
 
     for (const b of bills) {
@@ -242,7 +267,50 @@ const seed = async () => {
       }
     }
 
-    // 12. Seed MongoDB Vitals
+    // 12. Seed Inventory (Pharmacy Stock)
+    console.log('Seeding pharmacy inventory...');
+    const inventoryItems = [
+      { id: 'INV001', name: 'Tab. Paracetamol 650mg', category: 'Tablet', batch: 'BT-2026-001', qty: 500, unit: 'Tabs', reorder_level: 100, unit_price: 2.50, expiry: '2027-06-30', manufacturer: 'Cipla Ltd.', status: 'In Stock' },
+      { id: 'INV002', name: 'Tab. Telmisartan 40mg', category: 'Tablet', batch: 'BT-2026-002', qty: 250, unit: 'Tabs', reorder_level: 50, unit_price: 8.00, expiry: '2027-09-15', manufacturer: 'Zydus Lifesciences', status: 'In Stock' },
+      { id: 'INV003', name: 'Tab. Metformin 500mg SR', category: 'Tablet', batch: 'BT-2026-003', qty: 180, unit: 'Tabs', reorder_level: 50, unit_price: 5.50, expiry: '2027-03-31', manufacturer: 'Sun Pharma', status: 'In Stock' },
+      { id: 'INV004', name: 'Tab. Atorvastatin 10mg', category: 'Tablet', batch: 'BT-2026-004', qty: 45, unit: 'Tabs', reorder_level: 50, unit_price: 12.00, expiry: '2027-08-20', manufacturer: 'Torrent Pharma', status: 'Low Stock' },
+      { id: 'INV005', name: 'Tab. Amlodipine 5mg', category: 'Tablet', batch: 'BT-2026-005', qty: 18, unit: 'Tabs', reorder_level: 50, unit_price: 6.00, expiry: '2027-01-10', manufacturer: 'Cipla Ltd.', status: 'Low Stock' },
+      { id: 'INV006', name: 'Inj. Ceftriaxone 1g', category: 'Injection', batch: 'BT-2026-006', qty: 0, unit: 'Vials', reorder_level: 20, unit_price: 85.00, expiry: '2027-04-15', manufacturer: 'Alkem Labs', status: 'Out of Stock' },
+      { id: 'INV007', name: 'Tab. Furosemide 40mg', category: 'Tablet', batch: 'BT-2026-007', qty: 320, unit: 'Tabs', reorder_level: 60, unit_price: 3.50, expiry: '2027-11-30', manufacturer: 'Zydus Lifesciences', status: 'In Stock' },
+      { id: 'INV008', name: 'Tab. Digoxin 0.25mg', category: 'Tablet', batch: 'BT-2026-008', qty: 90, unit: 'Tabs', reorder_level: 30, unit_price: 15.00, expiry: '2027-07-20', manufacturer: 'Sun Pharma', status: 'In Stock' },
+      { id: 'INV009', name: 'Tab. Sumatriptan 50mg', category: 'Tablet', batch: 'BT-2026-009', qty: 40, unit: 'Tabs', reorder_level: 25, unit_price: 22.00, expiry: '2027-05-25', manufacturer: 'Dr. Reddys', status: 'In Stock' },
+      { id: 'INV010', name: 'Syr. Amoxicillin 250mg/5ml', category: 'Syrup', batch: 'BT-2026-010', qty: 12, unit: 'Bottles', reorder_level: 20, unit_price: 65.00, expiry: '2026-12-31', manufacturer: 'GlaxoSmithKline', status: 'Low Stock' },
+      { id: 'INV011', name: 'Cap. Omeprazole 20mg', category: 'Capsule', batch: 'BT-2026-011', qty: 400, unit: 'Caps', reorder_level: 80, unit_price: 4.00, expiry: '2027-10-15', manufacturer: 'Cipla Ltd.', status: 'In Stock' },
+      { id: 'INV012', name: 'Tab. Aspirin 75mg', category: 'Tablet', batch: 'BT-2026-012', qty: 600, unit: 'Tabs', reorder_level: 100, unit_price: 1.50, expiry: '2027-12-31', manufacturer: 'Bayer', status: 'In Stock' }
+    ];
+
+    for (const inv of inventoryItems) {
+      await pgClient.query(
+        'INSERT INTO inventory (id, hospital_id, name, category, batch, qty, unit, reorder_level, unit_price, expiry, manufacturer, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+        [inv.id, hospitalId, inv.name, inv.category, inv.batch, inv.qty, inv.unit, inv.reorder_level, inv.unit_price, inv.expiry, inv.manufacturer, inv.status]
+      );
+    }
+
+    // 13. Seed Nurse Tasks
+    console.log('Seeding nurse tasks...');
+    const nurseTasks = [
+      { id: 'NT001', bed: 'ICU-Bed 01', patient_name: 'Aarav Mehta', task: 'Administer IV Ceftriaxone 1g — dosage schedule 08:00 hrs', scheduled_time: '08:00 AM', priority: 'high', completed: false },
+      { id: 'NT002', bed: 'ICU-Bed 02', patient_name: 'Saira Banu', task: 'Record hourly vitals — SpO2 monitoring + BP check', scheduled_time: '09:00 AM', priority: 'high', completed: false },
+      { id: 'NT003', bed: 'Ward-A 101', patient_name: 'Meera Sen', task: 'Oral medication round — Tab. Atorvastatin 10mg with water', scheduled_time: '09:30 AM', priority: 'medium', completed: false },
+      { id: 'NT004', bed: 'ICU-Bed 01', patient_name: 'Aarav Mehta', task: 'Wound dressing change — chest catheter site inspection', scheduled_time: '10:00 AM', priority: 'high', completed: false },
+      { id: 'NT005', bed: 'Room-204', patient_name: 'Priya Sharma', task: 'Fever monitoring — ensure hydration protocol is maintained', scheduled_time: '10:30 AM', priority: 'medium', completed: false },
+      { id: 'NT006', bed: 'ICU-Bed 02', patient_name: 'Saira Banu', task: 'Nebulization therapy — Salbutamol + Ipratropium', scheduled_time: '11:00 AM', priority: 'medium', completed: false },
+      { id: 'NT007', bed: 'Ward-A 101', patient_name: 'Meera Sen', task: 'Pre-discharge counselling — dietary guidelines review', scheduled_time: '02:00 PM', priority: 'low', completed: false }
+    ];
+
+    for (const nt of nurseTasks) {
+      await pgClient.query(
+        'INSERT INTO nurse_tasks (id, hospital_id, bed, patient_name, task, scheduled_time, priority, completed, assigned_nurse_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+        [nt.id, hospitalId, nt.bed, nt.patient_name, nt.task, nt.scheduled_time, nt.priority, nt.completed, 'U1003']
+      );
+    }
+
+    // 14. Seed MongoDB Vitals
     console.log('Seeding MongoDB Vitals...');
     const vitalsList = [
       { uhid: 'UHID-2026-102', hr: 78, bp: '138/88', temp: 99.1, spo2: 97, status: 'normal', notes: 'Inpatient ICU round check', recordedBy: 'Sister Ananya Sharma' },
@@ -266,7 +334,7 @@ const seed = async () => {
       });
     }
 
-    // 13. Seed MongoDB Audit Logs
+    // 15. Seed MongoDB Audit Logs
     console.log('Seeding MongoDB Audit Logs...');
     const audits = [
       { userId: 'U1001', userName: 'Rajesh Iyer', role: 'admin', event: 'SYSTEM_INITIALIZATION', module: 'admin', ipAddress: '127.0.0.1', severity: 'info' },

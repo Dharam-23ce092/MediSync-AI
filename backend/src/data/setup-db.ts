@@ -44,7 +44,7 @@ const setup = async () => {
 
     // Drop existing tables to ensure clean schema rebuild
     console.log('Dropping existing tables...');
-    await client.query('DROP TABLE IF EXISTS payments, invoice_items, billing, lab_orders, prescriptions, beds, appointments, case_timeline, cases, doctors, users, patients, departments, hospitals CASCADE');
+    await client.query('DROP TABLE IF EXISTS nurse_tasks, inventory, payments, invoice_items, billing, lab_orders, prescriptions, beds, appointments, case_timeline, cases, doctors, users, patients, departments, hospitals CASCADE');
 
     // Create Tables
     console.log('Creating hospitals table...');
@@ -215,6 +215,7 @@ const setup = async () => {
         test_name VARCHAR(100) NOT NULL,
         specimen VARCHAR(100) NOT NULL,
         status VARCHAR(50) DEFAULT 'Received',
+        results JSONB,
         date DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -260,6 +261,41 @@ const setup = async () => {
         payment_method VARCHAR(50) NOT NULL,
         transaction_reference VARCHAR(100),
         status VARCHAR(20) NOT NULL DEFAULT 'SUCCESS',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('Creating inventory table...');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS inventory (
+        id VARCHAR(50) PRIMARY KEY,
+        hospital_id VARCHAR(50) REFERENCES hospitals(id) ON DELETE CASCADE,
+        name VARCHAR(200) NOT NULL,
+        category VARCHAR(50) NOT NULL DEFAULT 'Tablet',
+        batch VARCHAR(50) NOT NULL,
+        qty INT NOT NULL DEFAULT 0,
+        unit VARCHAR(20) NOT NULL DEFAULT 'Tabs',
+        reorder_level INT NOT NULL DEFAULT 50,
+        unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        expiry DATE NOT NULL,
+        manufacturer VARCHAR(200),
+        status VARCHAR(30) NOT NULL DEFAULT 'In Stock',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('Creating nurse_tasks table...');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS nurse_tasks (
+        id VARCHAR(50) PRIMARY KEY,
+        hospital_id VARCHAR(50) REFERENCES hospitals(id) ON DELETE CASCADE,
+        bed VARCHAR(50) NOT NULL,
+        patient_name VARCHAR(100) NOT NULL,
+        task TEXT NOT NULL,
+        scheduled_time VARCHAR(20) NOT NULL,
+        priority VARCHAR(10) NOT NULL DEFAULT 'medium',
+        completed BOOLEAN NOT NULL DEFAULT false,
+        assigned_nurse_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);

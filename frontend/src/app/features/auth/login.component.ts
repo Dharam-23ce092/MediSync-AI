@@ -43,6 +43,11 @@ export class LoginComponent {
     this.showPassword.update(v => !v);
   }
 
+  quickLogin(email: string, pass: string): void {
+    this.loginForm.setValue({ email, password: pass });
+    void this.onSubmit();
+  }
+
   async onSubmit(): Promise<void> {
     this.submitted.set(true);
     this.authError.set(null);

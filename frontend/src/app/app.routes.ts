@@ -65,15 +65,15 @@ export const routes: Routes = [
       },
       {
         path: 'nurse/patients.component',
-        loadComponent: () => import('./features/nurse/dashboard.component').then(m => m.NurseDashboard)
+        loadComponent: () => import('./features/nurse/patients.component').then(m => m.NursePatients)
       },
       {
         path: 'nurse/rounds',
-        loadComponent: () => import('./features/nurse/dashboard.component').then(m => m.NurseDashboard)
+        loadComponent: () => import('./features/nurse/rounds.component').then(m => m.NurseRounds)
       },
       {
         path: 'nurse/alerts',
-        loadComponent: () => import('./features/nurse/dashboard.component').then(m => m.NurseDashboard)
+        loadComponent: () => import('./features/nurse/alerts.component').then(m => m.NurseAlerts)
       },
 
       // Admin Portal
@@ -117,11 +117,11 @@ export const routes: Routes = [
       },
       {
         path: 'patient/records',
-        loadComponent: () => import('./features/patient/dashboard.component').then(m => m.PatientDashboard)
+        loadComponent: () => import('./features/patient/records.component').then(m => m.PatientRecords)
       },
       {
         path: 'patient/billing',
-        loadComponent: () => import('./features/patient/dashboard.component').then(m => m.PatientDashboard)
+        loadComponent: () => import('./features/patient/billing.component').then(m => m.PatientBilling)
       },
 
       // Shared Cases Lifecycle detail route
@@ -137,11 +137,11 @@ export const routes: Routes = [
       },
       {
         path: 'pharmacist/dispensing',
-        loadComponent: () => import('./features/pharmacist/dashboard.component').then(m => m.PharmacistDashboard)
+        loadComponent: () => import('./features/pharmacist/dispensing.component').then(m => m.PharmacistDispensing)
       },
       {
         path: 'pharmacist/inventory',
-        loadComponent: () => import('./features/pharmacist/dashboard.component').then(m => m.PharmacistDashboard)
+        loadComponent: () => import('./features/pharmacist/inventory.component').then(m => m.PharmacistInventory)
       },
 
       // Lab Portal
@@ -151,11 +151,11 @@ export const routes: Routes = [
       },
       {
         path: 'lab/samples',
-        loadComponent: () => import('./features/lab/dashboard.component').then(m => m.LabDashboard)
+        loadComponent: () => import('./features/lab/samples.component').then(m => m.LabSamples)
       },
       {
         path: 'lab/results',
-        loadComponent: () => import('./features/lab/dashboard.component').then(m => m.LabDashboard)
+        loadComponent: () => import('./features/lab/results.component').then(m => m.LabResults)
       }
     ]
   },

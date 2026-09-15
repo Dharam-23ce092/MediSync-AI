@@ -6,11 +6,12 @@ import { BaseModal } from '../../shared/components/base-modal/base-modal.compone
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { BedService, Bed } from '../../core/services/bed.service';
 import { AuthService } from '../../core/services/auth.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-admin-beds',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseCard, BaseModal, TooltipDirective],
+  imports: [CommonModule, FormsModule, BaseCard, BaseModal, TooltipDirective, RouterModule],
   template: `
     <div class="admin-beds-container animate-fade">
       <!-- Title Header -->
@@ -151,7 +152,7 @@ import { AuthService } from '../../core/services/auth.service';
 
           <!-- Occupied Detail Box -->
           <div class="detail-sub-box" *ngIf="bed.status === 'occupied'">
-            <h4 class="sub-box-title">Admitted Patient Info</h4>
+            <h4 class="sub-box-title">Admitted Patient Clinical Profile</h4>
             <div class="sub-details-grid">
               <div class="sub-detail-item">
                 <span class="sub-lbl">Patient Name:</span>
@@ -161,9 +162,37 @@ import { AuthService } from '../../core/services/auth.service';
                 <span class="sub-lbl">UHID:</span>
                 <span class="sub-val">{{ bed.uhid }}</span>
               </div>
+              <div class="sub-detail-item" *ngIf="bed.age || bed.gender">
+                <span class="sub-lbl">Demographics:</span>
+                <span class="sub-val">{{ bed.age }} yrs / {{ bed.gender }}</span>
+              </div>
+              <div class="sub-detail-item" *ngIf="bed.bloodGroup">
+                <span class="sub-lbl">Blood Group:</span>
+                <span class="sub-val font-semibold text-rose">{{ bed.bloodGroup }}</span>
+              </div>
               <div class="sub-detail-item">
-                <span class="sub-lbl">Assigned Doctor:</span>
-                <span class="sub-val">{{ bed.assignedDoctor }}</span>
+                <span class="sub-lbl">Attending Physician:</span>
+                <span class="sub-val">{{ bed.assignedDoctor || 'Assigned Duty Doctor' }}</span>
+              </div>
+              <div class="sub-detail-item" *ngIf="bed.allergies && bed.allergies.length">
+                <span class="sub-lbl">Documented Allergies:</span>
+                <span class="sub-val text-urgent font-medium">{{ bed.allergies.join(', ') }}</span>
+              </div>
+            </div>
+
+            <!-- Active Case Card -->
+            <div class="bed-case-banner" *ngIf="bed.diagnosis || bed.caseNumber">
+              <div class="case-header-line">
+                <span class="case-badge">Case #{{ bed.caseNumber || 'Active' }}</span>
+                <a *ngIf="bed.caseNumber" [routerLink]="['/cases', bed.caseNumber]" (click)="closeModal()" class="view-case-link">
+                  Open Case File →
+                </a>
+              </div>
+              <div class="case-diag-line" *ngIf="bed.diagnosis">
+                <strong>Diagnosis:</strong> {{ bed.diagnosis }}
+              </div>
+              <div class="case-complaint-line" *ngIf="bed.chiefComplaint">
+                <span class="text-muted">Chief Complaint:</span> {{ bed.chiefComplaint }}
               </div>
             </div>
           </div>
@@ -504,6 +533,50 @@ import { AuthService } from '../../core/services/auth.service';
     .sub-val {
       font-size: 12.5px;
       color: var(--color-text-primary);
+    }
+    .text-rose { color: #f43f5e; }
+    .text-urgent { color: #f59e0b; }
+
+    .bed-case-banner {
+      margin-top: var(--spacing-sm);
+      padding: 8px 12px;
+      border-radius: var(--border-radius-sm);
+      background-color: var(--color-bg-base);
+      border: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+    .case-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .case-badge {
+      background: var(--color-primary-glow);
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: var(--border-radius-full);
+      font-size: 11px;
+    }
+    .view-case-link {
+      color: var(--color-primary);
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .view-case-link:hover {
+      text-decoration: underline;
+    }
+    .case-diag-line {
+      color: var(--color-text-primary);
+    }
+    .case-complaint-line {
+      color: var(--color-text-secondary);
+      font-size: 11px;
     }
 
     /* Form inside modal */

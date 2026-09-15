@@ -79,20 +79,7 @@ export class VitalsService {
     return this.vitalsSignal().filter(v => v.status === 'critical' || v.status === 'warning');
   });
 
-  constructor() {
-    effect(() => {
-      if (this.authService.isAuthenticated()) {
-        const role = this.authService.currentRole();
-        if (role === 'nurse' || role === 'admin' || role === 'doctor') {
-          void this.loadVitals();
-        }
-      } else {
-        this.vitalsSignal.set([]);
-        this.errorSignal.set(null);
-        this.loadingSignal.set(false);
-      }
-    });
-  }
+  constructor() {}
 
   async loadVitals(force = false): Promise<void> {
     if (!force && this.loadingSignal()) {

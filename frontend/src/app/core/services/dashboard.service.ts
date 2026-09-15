@@ -32,6 +32,7 @@ export interface PharmacistDashboardMetrics {
   pendingDispensations: number;
   dispensedToday: number;
   lowStockAlarms: number;
+  expiringBatches?: number;
 }
 
 export interface LabDashboardMetrics {

@@ -21,6 +21,8 @@ import dashboardRouter from './routes/dashboard.routes';
 import hospitalRouter from './routes/hospital.routes';
 import staffRouter from './routes/staff.routes';
 import casesRouter from './routes/case.routes';
+import inventoryRouter from './routes/inventory.routes';
+import nurseTasksRouter from './routes/nurse-tasks.routes';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
@@ -64,6 +66,8 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/hospitals', hospitalRouter);
 app.use('/api/staff', staffRouter);
 app.use('/api/cases', casesRouter);
+app.use('/api/inventory', inventoryRouter);
+app.use('/api/nurse-tasks', nurseTasksRouter);
 
 // Health Check
 app.get('/api/health', (req: Request, res: Response) => {
