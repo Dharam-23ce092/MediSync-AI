@@ -453,7 +453,7 @@ export class LabResults implements OnInit {
         'Received': { label: 'Awaiting Phlebotomy', class: 'pill-urgent' },
         'Collected': { label: 'Ready for Entry', class: 'pill-info' },
         'Analysis': { label: 'In Analyzer', class: 'pill-secondary' },
-        'Completed': { label: 'Published & Verified', class: 'pill-normal' }
+        'Completed': { label: 'Published', class: 'pill-normal' }
       }
     },
     {
@@ -466,6 +466,7 @@ export class LabResults implements OnInit {
         {
           label: 'Enter Results',
           action: 'enterResults',
+          visible: row => ['Collected','Analysis'].includes(row.status),
           class: 'btn-primary',
           tooltip: 'Enter clinical pathology values',
           icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>'
@@ -476,7 +477,7 @@ export class LabResults implements OnInit {
 
   totalCount = computed(() => this.labService.labOrders().length);
   pendingResultsCount = computed(() =>
-    this.labService.labOrders().filter(o => o.status === 'Collected' || o.status === 'Analysis' || o.status === 'Received').length
+    this.labService.labOrders().filter(o => o.status === 'Collected' || o.status === 'Analysis').length
   );
   verifiedTodayCount = computed(() =>
     this.labService.labOrders().filter(o => o.status === 'Completed').length
@@ -533,7 +534,7 @@ export class LabResults implements OnInit {
       this.closeModal();
       setTimeout(() => this.successMessage.set(null), 4000);
     } catch {
-      this.errorMessage.set('Failed to publish lab results. Please try again.');
+      this.errorMessage.set(this.labService.error() || 'Failed to publish lab results.');
       setTimeout(() => this.errorMessage.set(null), 4000);
     } finally {
       this.isSubmitting.set(false);

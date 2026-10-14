@@ -19,7 +19,7 @@
   </div>
 
   <!-- Scrollable Table Wrapper -->
-  <div class="table-scroll-wrapper">
+  <div class="table-scroll-wrapper record-scroll" role="region" aria-label="Records table" tabindex="0">
     <table class="medisync-table">
       <thead>
         <tr>
@@ -43,8 +43,8 @@
         </ng-container>
 
         <!-- Data Rows -->
-        <ng-container *ngIf="!loading && data.length > 0">
-          <tr *ngFor="let row of data" (click)="onRowClick(row)" [class.clickable]="rowClick.observed">
+        <ng-container *ngIf="!loading && visibleRows.length > 0">
+          <tr *ngFor="let row of visibleRows" (click)="onRowClick(row)" [class.clickable]="rowClick.observed">
             <td
               *ngFor="let col of columns"
               [ngClass]="'text-' + (col.align || 'left')"
@@ -84,6 +84,8 @@
                 <button
                   *ngFor="let act of col.actions"
                   [class]="'action-btn ' + (act.class || '')"
+                    [style.display]="act.visible && !act.visible(row) ? 'none' : null"
+                  [attr.aria-label]="act.label"
                   [appTooltip]="act.tooltip || act.label"
                   tooltipPosition="top"
                   (click)="onAction(act.action, row, $event)"
@@ -102,7 +104,7 @@
         </ng-container>
 
         <!-- Empty State -->
-        <tr *ngIf="!loading && data.length === 0">
+        <tr *ngIf="!loading && visibleRows.length === 0">
           <td [attr.colspan]="columns.length" class="empty-state-row">
             <div class="empty-state-content">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
@@ -118,11 +120,11 @@
   </div>
 
   <!-- Table Pagination Footer -->
-  <div class="table-pagination-footer" *ngIf="showPagination && totalItems > pageSize">
+  <div class="table-pagination-footer" *ngIf="showPagination && effectiveTotal > pageSize">
     <div class="pagination-info">
       Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to
-      <strong>{{ Math.min(currentPage * pageSize, totalItems) }}</strong> of
-      <strong>{{ totalItems }}</strong> entries
+      <strong>{{ Math.min(currentPage * pageSize, effectiveTotal) }}</strong> of
+      <strong>{{ effectiveTotal }}</strong> entries
     </div>
     <div class="pagination-buttons">
       <!-- Prev Button -->

@@ -88,7 +88,7 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- Pay Invoice Modal -->
       <app-base-modal
         [isOpen]="isModalOpen()"
-        [title]="selectedInvoice() ? 'Settle Payment — ' + selectedInvoice()?.invoiceNumber : 'Pay Invoice'"
+        [title]="selectedInvoice() ? 'Invoice — ' + selectedInvoice()?.invoiceNumber : 'Invoice details'"
         size="md"
         (close)="closeModal()"
       >
@@ -112,35 +112,14 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
 
-          <div class="payment-method-box">
-            <label class="form-lbl">Select Payment Mode:</label>
-            <div class="method-options">
-              <label class="radio-label">
-                <input type="radio" [(ngModel)]="payMethod" value="UPI / QR Code" />
-                <span>UPI / QR Scan (Google Pay, PhonePe, Paytm)</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" [(ngModel)]="payMethod" value="Credit/Debit Card" />
-                <span>Credit / Debit Card (Visa, MasterCard, RuPay)</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" [(ngModel)]="payMethod" value="Net Banking" />
-                <span>Net Banking / RTGS</span>
-              </label>
-            </div>
-          </div>
+          <h3>Charges</h3>
+          <div class="sum-row" *ngFor="let item of inv.items"><span>{{ item.description }} × {{ item.quantity }}</span><strong>{{ item.totalPrice | currency:"INR" }}</strong></div>
+          <p *ngIf="!inv.items?.length">No itemized charges were recorded for this legacy invoice.</p>
+          <h3>Receipts</h3>
+          <div class="sum-row" *ngFor="let payment of inv.payments"><span>{{ payment.date | date:"mediumDate" }} · {{ payment.paymentMethod }}</span><strong>{{ payment.amount | currency:"INR" }}</strong></div>
+          <p>Contact the hospital billing desk to settle an outstanding balance. Online payment is not connected.</p>
         </div>
-
-        <div modal-footer>
-          <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-          <button
-            class="btn-pay"
-            [disabled]="paying() || !selectedInvoice() || selectedInvoice()!.balance <= 0"
-            (click)="submitPayment()"
-          >
-            {{ paying() ? 'Processing Payment...' : 'Pay ₹' + (selectedInvoice()?.balance || 0).toLocaleString('en-IN') }}
-          </button>
-        </div>
+        <div modal-footer><button class="btn-cancel" (click)="closeModal()">Close</button></div>
       </app-base-modal>
     </div>
   `,
@@ -356,10 +335,10 @@ export class PatientBilling implements OnInit {
       align: 'center',
       actions: [
         {
-          label: 'Pay Now',
+          label: 'View invoice',
           action: 'pay',
           class: 'btn-primary',
-          tooltip: 'Settle outstanding balance online',
+          tooltip: 'View charges and recorded receipts',
           icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>'
         }
       ]
@@ -368,14 +347,14 @@ export class PatientBilling implements OnInit {
 
   currentUhid = computed(() => {
     const user = this.authService.currentUser();
-    return user?.uhid || 'UHID-2026-981240';
+    return user?.uhid || '';
   });
 
   myInvoices = computed(() => {
     const uhid = this.currentUhid();
     const all = this.billingService.invoices();
-    const filtered = all.filter(inv => inv.uhid === uhid || inv.name === this.authService.currentUser()?.name);
-    return filtered.length > 0 ? filtered : all;
+    const filtered = all.filter(inv => inv.uhid === uhid);
+    return filtered;
   });
 
   totalDue = computed(() =>
@@ -394,11 +373,11 @@ export class PatientBilling implements OnInit {
     void this.billingService.loadInvoices();
   }
 
-  onAction(event: { action: string, row: Invoice }) {
-    if (event.action === 'pay') {
-      this.selectedInvoice.set(event.row);
-      this.isModalOpen.set(true);
-    }
+  async onAction(event: { action: string, row: Invoice }) {
+    this.errorMessage.set(null);
+    const invoice = await this.billingService.loadInvoiceDetail(event.row.id);
+    if (invoice) { this.selectedInvoice.set(invoice); this.isModalOpen.set(true); }
+    else this.errorMessage.set(this.billingService.error() || "Unable to load invoice details.");
   }
 
   closeModal() {
@@ -406,23 +385,4 @@ export class PatientBilling implements OnInit {
     this.selectedInvoice.set(null);
   }
 
-  async submitPayment() {
-    const inv = this.selectedInvoice();
-    if (!inv) return;
-
-    this.paying.set(true);
-    this.errorMessage.set(null);
-
-    try {
-      await this.billingService.payInvoice(inv.id, inv.balance, this.payMethod);
-      this.successMessage.set(`Payment of ₹${inv.balance.toLocaleString('en-IN')} received for Invoice ${inv.invoiceNumber}. Receipt generated.`);
-      this.closeModal();
-      setTimeout(() => this.successMessage.set(null), 5000);
-    } catch {
-      this.errorMessage.set('Payment processing encountered an error.');
-      setTimeout(() => this.errorMessage.set(null), 4000);
-    } finally {
-      this.paying.set(false);
-    }
-  }
 }

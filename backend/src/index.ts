@@ -1,4 +1,6 @@
 import app from './app';
+import { importLegacyClinicalRecords } from './data/import-legacy-clinical';
+import { migrateWorkflows } from './data/migrate-workflows';
 import { connectPostgres } from './config/postgres';
 import { connectMongo } from './config/mongo';
 import dotenv from 'dotenv';
@@ -13,7 +15,9 @@ const startServer = async () => {
 
   // Connect Databases
   await connectPostgres();
+  await migrateWorkflows();
   await connectMongo();
+  await importLegacyClinicalRecords();
 
   app.listen(PORT, () => {
     console.log(`MediSync AI Backend is running on port ${PORT}`);

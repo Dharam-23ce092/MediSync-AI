@@ -1,10 +1,10 @@
 <div class="modal-backdrop" *ngIf="isOpen" (click)="onBackdropClick($event)" class="modal-backdrop active animate-fade">
-  <div class="modal-wrapper" [ngClass]="'modal-' + size" (click)="$event.stopPropagation()">
+  <div role="dialog" aria-modal="true" [attr.aria-label]="title" class="modal-wrapper" [ngClass]="'modal-' + size" (click)="$event.stopPropagation()">
     <!-- Modal Header -->
     <div class="modal-header">
       <h3 class="modal-title" *ngIf="title">{{ title }}</h3>
       <ng-content select="[modal-header]"></ng-content>
-      <button class="close-btn" (click)="onClose()" appTooltip="Close dialog" tooltipPosition="left">
+      <button aria-label="Close dialog" class="close-btn" (click)="onClose()" appTooltip="Close dialog" tooltipPosition="left">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>

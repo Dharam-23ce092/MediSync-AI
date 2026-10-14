@@ -280,7 +280,7 @@ import { PatientStore, Patient } from '../../core/stores/patient.store';
     }
     .edit-input:focus {
       border-color: var(--color-primary);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       box-shadow: var(--color-primary-glow);
     }
     .edit-input:disabled {
@@ -484,14 +484,14 @@ export class DoctorPatients implements OnInit {
   }
 
   onRowClick(row: any) {
-    this.router.navigate(['/doctor/consultation.component', row.id]);
+    this.router.navigate(['/doctor/consultation', row.id]);
   }
 
   onActionClick(event: { action: string, row: any }) {
     if (event.action === 'edit') {
       this.openEditModal(event.row);
     } else if (event.action === 'view-emr') {
-      this.router.navigate(['/doctor/consultation.component', event.row.id]);
+      this.router.navigate(['/doctor/consultation', event.row.id]);
     } else if (event.action === 'book') {
       this.router.navigate(['/patient/book.component']);
     }

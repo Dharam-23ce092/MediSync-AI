@@ -1,0 +1,133 @@
+<div class="workspace">
+  <header class="welcome">
+    <div>
+      <div class="eyebrow">
+        {{ role === 'patient' ? 'PATIENT PORTAL' : 'WORKSPACE OVERVIEW' }}
+        <span> / {{ today | date: 'EEEE, d MMMM' }}</span>
+      </div>
+      <h1>{{ data()?.title || 'Your workspace' }}</h1>
+      <p>{{ data()?.subtitle || 'Loading your hospital workspace…' }}</p>
+    </div>
+    <button class="refresh" [disabled]="loading()" (click)="refresh()">
+      <span aria-hidden="true">↻</span> {{ loading() ? 'Updating…' : 'Refresh' }}
+    </button>
+  </header>
+  <div class="error-message" role="alert" *ngIf="error()">
+    {{ error() }} <button (click)="refresh()">Retry</button>
+  </div>
+  <section class="quick-actions" aria-label="Quick actions">
+    <a *ngFor="let action of actions[role] || actions['admin']" [routerLink]="action.link"
+      ><span class="action-icon">{{ action.icon }}</span>
+      <div>
+        <strong>{{ action.title }}</strong
+        ><small>{{ action.description }}</small>
+      </div>
+      <span class="arrow">↗</span></a
+    >
+  </section>
+  <ng-container *ngIf="data() as d">
+    <section class="metric-grid" aria-label="Current metrics">
+      <a
+        *ngFor="let card of d.cards"
+        [routerLink]="card.link"
+        class="metric-card"
+        [attr.data-tone]="card.tone"
+        ><div class="metric-top">
+          <span>{{ card.label }}</span
+          ><span class="metric-dot"></span>
+        </div>
+        <strong>{{
+          card.format === 'currency'
+            ? (card.value | currency: 'INR' : 'symbol' : '1.0-0')
+            : card.value
+        }}</strong>
+        <p>{{ card.hint }} <span>↗</span></p></a
+      >
+    </section>
+    <div class="workspace-columns">
+      <section class="panel work-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>
+              {{
+                role === 'patient'
+                  ? 'Your active visits'
+                  : role === 'nurse'
+                    ? 'Current admissions'
+                    : 'Needs attention'
+              }}
+            </h2>
+            <p>
+              {{
+                role === 'patient'
+                  ? 'Requests and visits that have not been completed'
+                  : 'Current records with a next step to take'
+              }}
+            </p>
+          </div>
+          <a [routerLink]="d.workLink">View all <span>→</span></a>
+        </div>
+        <div class="work-list record-scroll" role="region" aria-label="Work queue" tabindex="0">
+          <article *ngFor="let item of d.work">
+            <div class="record-avatar">{{ item.title?.charAt(0) }}</div>
+            <div class="record-content">
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.detail }}</p>
+              <small>{{ item.date | date: 'd MMM, h:mm a' }}</small>
+            </div>
+            <div class="record-action">
+              <span
+                class="status"
+                [class.pending]="
+                  item.status === 'Requested' ||
+                  item.status === 'Received' ||
+                  item.status === 'Pending'
+                "
+                >{{ item.status }}</span
+              ><a *ngIf="item.caseId" [routerLink]="['/cases', item.caseId]">Open case →</a
+              ><a *ngIf="!item.caseId" [routerLink]="d.workLink">Review →</a>
+            </div>
+          </article>
+          <div class="empty-state" *ngIf="!d.work.length">
+            <span>✓</span>
+            <h3>You're all caught up</h3>
+            <p>
+              {{
+                role === 'patient'
+                  ? 'New appointments will appear here after you request a visit.'
+                  : 'There are no open records in this queue.'
+              }}
+            </p>
+            <a [routerLink]="d.workLink">Open workspace →</a>
+          </div>
+        </div>
+        <footer class="panel-footer">
+          Updated {{ d.updatedAt | date: 'shortTime' }} · Refreshes every minute
+        </footer>
+      </section>
+      <aside class="panel activity-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Recent activity</h2>
+            <p>Recorded changes to patient cases</p>
+          </div>
+        </div>
+        <div class="activity-list record-scroll" role="region" aria-label="Recent activity" tabindex="0">
+          <a *ngFor="let event of d.activity" [routerLink]="['/cases', event.caseId]"
+            ><span class="activity-dot"></span>
+            <div>
+              <small>{{ event.date | date: 'd MMM, h:mm a' }}</small>
+              <p>{{ event.summary }}</p>
+              <strong>{{ event.patientName }} · {{ event.caseNumber }}</strong>
+            </div></a
+          >
+          <div class="quiet-state" *ngIf="!d.activity.length">
+            No case activity yet. Updates will appear as care progresses.
+          </div>
+        </div>
+        <a class="all-records" routerLink="/cases">Browse case records →</a>
+      </aside>
+    </div>
+  </ng-container>
+  <div class="loading-state" *ngIf="loading() && !data()">Loading your current records…</div>
+</div>

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from '../config/api.config';
@@ -16,6 +16,7 @@ export interface Bed {
   gender?: string;
   bloodGroup?: string;
   allergies?: string[];
+  caseId?: string;
   caseNumber?: string;
   diagnosis?: string;
   chiefComplaint?: string;
@@ -33,6 +34,7 @@ interface BackendBed {
   gender?: string;
   bloodGroup?: string;
   allergies?: string[];
+  caseId?: string;
   caseNumber?: string;
   diagnosis?: string;
   chiefComplaint?: string;
@@ -62,6 +64,7 @@ function mapBed(raw: BackendBed): Bed {
     gender: raw.gender,
     bloodGroup: raw.bloodGroup,
     allergies: raw.allergies,
+    caseId: raw.caseId,
     caseNumber: raw.caseNumber,
     diagnosis: raw.diagnosis,
     chiefComplaint: raw.chiefComplaint
@@ -98,7 +101,7 @@ export class BedService {
       if (this.authService.isAuthenticated()) {
         const role = this.authService.currentRole();
         if (role === 'admin' || role === 'doctor' || role === 'nurse') {
-          void this.loadBeds();
+          untracked(() => { void this.loadBeds(); });
         }
       } else {
         this.bedsSignal.set([]);
@@ -132,7 +135,11 @@ export class BedService {
     }
   }
 
-  async allocateBed(id: string, uhid: string, patientName: string, doctorName: string): Promise<void> {
+  async createBed(name: string,type: string): Promise<void> {
+    try { await firstValueFrom(this.http.post(`${getApiBaseUrl()}/beds`,{name,type})); await this.loadBeds(true); }
+    catch(error) { this.handleError(error); throw error; }
+  }
+  async allocateBed(id: string, uhid: string, patientName: string, doctorId: string): Promise<void> {
     this.errorSignal.set(null);
 
     try {
@@ -140,7 +147,7 @@ export class BedService {
         this.http.patch<BedActionResponse>(`${getApiBaseUrl()}/beds/${encodeURIComponent(id)}`, {
           action: 'allocate',
           uhid,
-          doctorName
+          doctorId
         })
       );
 
@@ -174,6 +181,13 @@ export class BedService {
       this.handleError(error);
       throw error;
     }
+  }
+
+  async releaseReservation(id: string): Promise<void> {
+    try {
+      await firstValueFrom(this.http.patch(`${getApiBaseUrl()}/beds/${encodeURIComponent(id)}`, { action: 'cancel-reservation' }));
+      await this.loadBeds(true);
+    } catch(error) { this.handleError(error); throw error; }
   }
 
   async markReady(id: string): Promise<void> {

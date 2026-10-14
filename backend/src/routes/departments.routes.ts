@@ -31,7 +31,7 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
       ORDER BY d.name ASC
     `;
 
-    const result = await pool.query(query, [hospitalId || 'H101']);
+    const result = await pool.query(query, [hospitalId]);
     return res.json({
       success: true,
       data: result.rows

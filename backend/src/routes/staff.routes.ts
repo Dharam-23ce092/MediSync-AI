@@ -72,7 +72,8 @@ router.post('/', authenticateJWT, requireTenant, authorizeRoles(['admin']), asyn
     }
 
     const userId = `U${Date.now()}`;
-    const rawPassword = password || `${role.toLowerCase()}_medisync`;
+    if (typeof password !== "string" || password.length < 10) { await client.query("ROLLBACK"); return res.status(400).json({success:false,message:"An initial password of at least 10 characters is required."}); }
+    const rawPassword = password;
     const passwordHash = await bcrypt.hash(rawPassword, 10);
 
     const userInsertQuery = `
@@ -338,7 +339,8 @@ router.post('/import', authenticateJWT, requireTenant, authorizeRoles(['admin'])
     const departments = deptResult.rows;
 
     for (const record of records) {
-      const { name, email, role, department, specialty, employee_id } = record;
+      const { name, email, password, role, department, specialty, employee_id } = record;
+      if (typeof password !== "string" || password.length < 10) { skippedUsers.push({email,reason:"Password of at least 10 characters is required"}); continue; }
 
       if (!name || !email || !role) {
         skippedUsers.push({ email, reason: 'Missing name, email, or role' });
@@ -362,7 +364,7 @@ router.post('/import', authenticateJWT, requireTenant, authorizeRoles(['admin'])
       }
 
       const userId: string = `U${Date.now() + createdUsers.length}`;
-      const defaultPassword = `${role.toLowerCase()}_medisync`;
+      const defaultPassword = password;
       const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
       const userInsertQuery = `

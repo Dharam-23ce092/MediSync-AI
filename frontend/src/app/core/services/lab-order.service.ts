@@ -5,6 +5,7 @@ import { getApiBaseUrl } from '../config/api.config';
 import { AuthService } from './auth.service';
 
 export interface LabOrder {
+  caseId?: string;
   id: string;
   name: string;
   name_subtitle: string;
@@ -130,7 +131,8 @@ export class LabOrderService {
           name_subtitle: order.name_subtitle,
           testName: order.testName,
           doctor: order.doctor,
-          specimen: order.specimen
+          specimen: order.specimen,
+          caseId: order.caseId
         })
       );
 

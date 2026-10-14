@@ -82,7 +82,7 @@
 
 .staff-layout {
   display: grid;
-  grid-template-columns: 8fr 4fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   align-items: start;
 }
@@ -127,6 +127,7 @@
 
 .controls-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
@@ -184,13 +185,29 @@
 .p-0 { padding: 0 !important; }
 
 .table-responsive {
-  overflow-x: auto;
+  overflow: auto;
+  height: 100%;
+}
+
+.staff-list-card { min-width: 0; }
+.staff-list-card > .card-body {
+  height: var(--record-viewport-height);
+  min-height: 0;
+  overflow: hidden;
+}
+.staff-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-bg-surface);
 }
 
 /* Roster Table */
 .staff-table {
+  min-width: 1050px;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
 }
 
@@ -212,6 +229,9 @@
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
+
+.staff-table td:first-child { white-space: nowrap; }
+.onboarding-sidebar { max-width: 620px; width: 100%; min-width: 0; }
 
 .staff-table tr:last-child td {
   border-bottom: none;

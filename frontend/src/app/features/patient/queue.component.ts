@@ -281,7 +281,7 @@ import { AuthService } from '../../core/services/auth.service';
       box-shadow: 0 0 10px rgba(16, 98, 254, 0.4);
     }
     .timeline-point.waiting {
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       border-color: var(--color-border-hover);
     }
     .timeline-connector {

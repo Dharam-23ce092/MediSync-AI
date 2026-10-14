@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BaseCard } from '../../shared/components/base-card/base-card.component';
 import { BaseTable, TableColumn } from '../../shared/components/base-table/base-table.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
@@ -10,7 +10,7 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, BaseCard, BaseTable, TooltipDirective],
+  imports: [RouterLink, CommonModule, BaseCard, BaseTable, TooltipDirective],
   template: `
     <div class="admin-dashboard-container animate-fade">
       <!-- Title Header -->
@@ -45,7 +45,7 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
             <div class="kpi-info">
               <span class="kpi-label">Patients Today</span>
               <h2 class="kpi-value">{{ adminMetrics()?.patientsToday ?? 0 }}</h2>
-              <span class="kpi-subtext">OPD + IPD + ER</span>
+              <span class="kpi-subtext">New patient registrations</span>
             </div>
           </div>
         </app-base-card>
@@ -58,7 +58,7 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
             <div class="kpi-info">
               <span class="kpi-label">ICU Occupancy</span>
               <h2 class="kpi-value" [class.warning-color]="adminMetrics() && adminMetrics()!.icuOccupancyPercent >= 80">{{ adminMetrics()?.icuOccupancyPercent ?? 0 }}%</h2>
-              <span class="kpi-subtext">{{ adminMetrics()?.occupiedBeds ?? 0 }} / {{ adminMetrics()?.totalBeds ?? 0 }} Beds Occupied</span>
+              <span class="kpi-subtext">{{ adminMetrics()?.occupiedBeds ?? 0 }} / {{ adminMetrics()?.totalBeds ?? 0 }} Beds Occupied across all wards</span>
             </div>
           </div>
         </app-base-card>
@@ -114,41 +114,15 @@ import { DashboardService, AdminDashboardMetrics } from '../../core/services/das
           </app-base-card>
         </div>
 
-        <!-- Sidebar: Alerts Center & Analytics -->
         <div class="sidebar-column flex flex-col gap-md">
-          <app-base-card [border]="true" elevation="sm" statusBorder="critical">
-            <h3 class="section-title critical-header" card-header>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon text-danger"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              Operational Warnings
-            </h3>
-            <div card-body class="warnings-list">
-              <div class="warning-alert-box" appTooltip="Bed shortage warning" tooltipPosition="left">
-                <div class="warning-title">NICU Bed Shortage</div>
-                <div class="warning-text">NICU occupancy reaches 100%. Contact referral branches.</div>
-              </div>
-
-              <div class="warning-alert-box" appTooltip="Low stock alert" tooltipPosition="left">
-                <div class="warning-title">Pharmacy Stock Low</div>
-                <div class="warning-text">Amlodipine 5mg stock levels below threshold (5 days remaining).</div>
-              </div>
-            </div>
-          </app-base-card>
-
-          <!-- AI forecasting block -->
           <app-base-card [border]="true" elevation="sm">
-            <h3 class="section-title ai-forecast-header" card-header>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon text-teal"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-              Clinical AI Forecasts
-            </h3>
+            <h3 card-header>Hospital operations</h3>
             <div card-body class="forecast-content">
-              <div class="forecast-item">
-                <span class="forecast-lbl">Expected Admissions Tomorrow:</span>
-                <span class="forecast-val font-semibold">18 - 24 patients</span>
-              </div>
-              <div class="forecast-item border-top">
-                <span class="forecast-lbl">Expected Bed Discharges:</span>
-                <span class="forecast-val font-semibold">14 patients</span>
-              </div>
+              <a routerLink="/admin/appointments">Review appointment requests →</a>
+              <a routerLink="/admin/beds.component">{{ adminMetrics()?.occupiedBeds ?? 0 }} occupied / {{ adminMetrics()?.totalBeds ?? 0 }} beds →</a>
+              <a routerLink="/admin/billing">Review outstanding invoices →</a>
+              <p *ngIf="adminMetrics()?.availableBeds === 0">No beds currently available. Review cleaning and discharge status.</p>
+              <p>Occupancy comes from current bed assignments. Select a bed to open its patient and admission case.</p>
             </div>
           </app-base-card>
         </div>
@@ -356,7 +330,7 @@ export class AdminDashboard implements OnInit {
 
   onBillingAction(event: { action: string, row: any }) {
     if (event.action === 'view') {
-      console.log('Invoice detail view:', event.row);
+      this.router.navigate(['/admin/billing']);
     }
   }
 

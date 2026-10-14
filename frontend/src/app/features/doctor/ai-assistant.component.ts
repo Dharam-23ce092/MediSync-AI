@@ -252,7 +252,7 @@ interface Message {
       gap: 6px;
     }
     .source-tag {
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       border: 1px solid var(--color-border);
       color: var(--color-text-primary);
       padding: 2px 8px;
@@ -273,7 +273,7 @@ interface Message {
       padding: 0 var(--spacing-md);
       border-radius: var(--border-radius-md);
       border: 1px solid var(--color-border);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       color: var(--color-text-primary);
       font-size: 13px;
     }

@@ -12,8 +12,8 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
       FROM users u
       LEFT JOIN doctors doc ON doc.user_id = u.id
       LEFT JOIN departments d ON d.id = u.department_id
-      WHERE u.role = 'doctor'
-    `);
+      WHERE u.role = 'doctor' AND u.hospital_id=$1 AND u.is_active=true
+    `, [req.user?.hospital_id]);
 
     return res.json({
       success: true,
@@ -34,8 +34,8 @@ router.get('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Respo
       FROM users u
       LEFT JOIN doctors doc ON doc.user_id = u.id
       LEFT JOIN departments d ON d.id = u.department_id
-      WHERE u.role = 'doctor' AND u.id = $1
-    `, [id]);
+      WHERE u.role = 'doctor' AND u.id = $1 AND u.hospital_id=$2 AND u.is_active=true
+    `, [id, req.user?.hospital_id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Doctor not found' });

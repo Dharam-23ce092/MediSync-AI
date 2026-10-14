@@ -1,4 +1,7 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { getApiBaseUrl } from '../../core/config/api.config';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseCard } from '../../shared/components/base-card/base-card.component';
@@ -11,6 +14,9 @@ import { InventoryService, InventoryItem } from '../../core/services/inventory.s
   imports: [CommonModule, FormsModule, BaseCard, BaseTable],
   template: `
     <div class="inventory-page-container animate-fade">
+      <details style="padding:20px;border:1px solid var(--color-border);border-radius:12px;background:var(--color-bg-surface)"><summary>Add a received inventory batch</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px">
+        <label>Medicine name<input [(ngModel)]="newStock.name" /></label><label>Batch number<input [(ngModel)]="newStock.batch" /></label><label>Quantity<input type="number" min="1" [(ngModel)]="newStock.qty" /></label><label>Unit<input [(ngModel)]="newStock.unit" /></label><label>Price per unit (₹)<input type="number" min="0" step="0.01" [(ngModel)]="newStock.unit_price" /></label><label>Reorder level<input type="number" min="0" [(ngModel)]="newStock.reorder_level" /></label><label>Expiry<input type="date" [(ngModel)]="newStock.expiry" /></label><button [disabled]="stockSaving()" (click)="addStock()">Save batch</button></div></details>
+      <div *ngIf="receivingId" style="padding:20px;border:1px solid var(--color-border);border-radius:12px"><label>Quantity received for selected batch<input type="number" min="1" [(ngModel)]="receiveQuantity" /></label><button [disabled]="stockSaving()" (click)="receiveStock()">Record received stock</button><button (click)="receivingId=''">Cancel</button></div>
       <!-- Header -->
       <div class="page-header">
         <div>
@@ -119,6 +125,7 @@ import { InventoryService, InventoryItem } from '../../core/services/inventory.s
     </div>
   `,
   styles: `
+    label{display:grid;gap:7px;font-size:12px}input{padding:10px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-bg-surface);color:var(--color-text-primary)}
     .inventory-page-container {
       display: flex;
       flex-direction: column;
@@ -242,6 +249,11 @@ export class PharmacistInventory implements OnInit {
 
   selectedCategory = signal<string>('All');
   filterStatus = signal<'all' | 'alerts'>('all');
+  private http=inject(HttpClient);
+  stockSaving=signal(false); receivingId=''; receiveQuantity=1;
+  newStock={name:'',batch:'',qty:1,unit:'Tabs',unit_price:0,reorder_level:10,expiry:''};
+  async addStock(){this.stockSaving.set(true);try{await firstValueFrom(this.http.post(`${getApiBaseUrl()}/inventory`,this.newStock));this.notification.set('Inventory batch added.');this.newStock={name:'',batch:'',qty:1,unit:'Tabs',unit_price:0,reorder_level:10,expiry:''};this.refreshInventory();}catch(e:any){this.notification.set(e.error?.message||'Unable to add stock.');}finally{this.stockSaving.set(false);}}
+  async receiveStock(){this.stockSaving.set(true);try{await firstValueFrom(this.http.patch(`${getApiBaseUrl()}/inventory/${this.receivingId}/receive`,{quantity:this.receiveQuantity}));this.receivingId='';this.notification.set('Received stock recorded.');this.refreshInventory();}catch(e:any){this.notification.set(e.error?.message||'Unable to record stock.');}finally{this.stockSaving.set(false);}}
   notification = signal<string | null>(null);
 
   columns: TableColumn[] = [
@@ -272,11 +284,12 @@ export class PharmacistInventory implements OnInit {
       width: '110px',
       align: 'center',
       actions: [
+        { label:'Receive stock',action:'receive',class:'btn-primary' },
         {
-          label: 'Reorder',
+          label: 'Request stock',
           action: 'reorder',
           class: 'btn-secondary',
-          tooltip: 'Transmit replenishment PO to distributor',
+          tooltip: 'Record an internal replenishment request',
           icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>'
         }
       ]
@@ -330,13 +343,14 @@ export class PharmacistInventory implements OnInit {
   }
 
   async onAction(event: { action: string, row: any }) {
+    if (event.action === 'receive') { this.receivingId=event.row.id;this.receiveQuantity=1;return; }
     if (event.action === 'reorder') {
       try {
         const msg = await this.inventoryService.requestReorder(event.row.id);
         this.notification.set(msg);
         setTimeout(() => this.notification.set(null), 4000);
       } catch {
-        this.notification.set('Failed to transmit reorder PO.');
+        this.notification.set('Unable to record replenishment request.');
         setTimeout(() => this.notification.set(null), 4000);
       }
     }

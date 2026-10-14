@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from '../config/api.config';
@@ -128,7 +128,7 @@ export class BillingService {
       if (this.authService.isAuthenticated()) {
         const role = this.authService.currentRole();
         if (role === 'admin' || role === 'patient') {
-          void this.loadInvoices();
+          untracked(() => { void this.loadInvoices(); });
         }
       } else {
         this.invoicesSignal.set([]);

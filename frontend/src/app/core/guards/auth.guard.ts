@@ -26,3 +26,13 @@ export const guestGuard: CanActivateFn = () => {
 
   return true;
 };
+
+export const portalGuard: CanActivateFn = (route) => {
+ const auth=inject(AuthService), router=inject(Router), role=auth.currentRole();
+ const path=route.routeConfig?.path || '';
+ if (!role) return router.createUrlTree(['/login']);
+ if ((path === 'cases' || path.startsWith('cases/')) || !path) return true;
+ const portal=path.split('/')[0];
+ if ((role==='super_admin' && portal==='admin') || portal===role || (role==='admin' && portal==='doctor') || (role==='receptionist' && path==='admin/appointments')) return true;
+ return router.createUrlTree([auth.getPortalRouteForRole(role)]);
+};

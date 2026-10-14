@@ -56,18 +56,6 @@
       <h2 class="form-title">Sign In to Portal</h2>
       <p class="form-subtitle">Enter your clinical credentials to access your workspace</p>
 
-      <div class="demo-strip">
-        <span class="demo-title">Quick Demo Login:</span>
-        <div class="demo-chips">
-          <button type="button" class="demo-btn" (click)="quickLogin('admin@zydus.org', 'admin_medisync')">👑 Admin</button>
-          <button type="button" class="demo-btn" (click)="quickLogin('doctor@zydus.org', 'doctor_medisync')">👨‍⚕️ Doctor</button>
-          <button type="button" class="demo-btn" (click)="quickLogin('nurse@zydus.org', 'nurse_medisync')">👩‍⚕️ Nurse</button>
-          <button type="button" class="demo-btn" (click)="quickLogin('pharmacist@zydus.org', 'pharmacist_medisync')">💊 Pharmacist</button>
-          <button type="button" class="demo-btn" (click)="quickLogin('lab@zydus.org', 'lab_medisync')">🔬 Lab Tech</button>
-          <button type="button" class="demo-btn" (click)="quickLogin('patient@zydus.org', 'patient_medisync')">👤 Patient</button>
-        </div>
-      </div>
-
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form auth-card" novalidate>
         <div class="form-group gap-5">
           <label for="email" class="form-label">Email Address</label>

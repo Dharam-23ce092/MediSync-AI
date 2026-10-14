@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { DashboardShell } from './shared/components/layout/dashboard-shell/dashboard-shell.component';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, portalGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +25,7 @@ export const routes: Routes = [
     path: '',
     component: DashboardShell,
     canActivate: [authGuard],
+    canActivateChild: [portalGuard],
     children: [
       {
         path: '',
@@ -35,7 +36,7 @@ export const routes: Routes = [
       // Doctor Portal
       {
         path: 'doctor/dashboard.component',
-        loadComponent: () => import('./features/doctor/dashboard.component').then(m => m.DoctorDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'doctor/patients.component',
@@ -43,7 +44,7 @@ export const routes: Routes = [
       },
       {
         path: 'doctor/appointments',
-        loadComponent: () => import('./features/doctor/dashboard.component').then(m => m.DoctorDashboard)
+        loadComponent: () => import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent)
       },
       {
         path: 'doctor/opd.component',
@@ -61,7 +62,7 @@ export const routes: Routes = [
       // Nurse Portal
       {
         path: 'nurse/dashboard.component',
-        loadComponent: () => import('./features/nurse/dashboard.component').then(m => m.NurseDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'nurse/patients.component',
@@ -76,10 +77,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/nurse/alerts.component').then(m => m.NurseAlerts)
       },
 
+      { path: 'admin/appointments', loadComponent: () => import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent) },
+      { path: 'patient/appointments', loadComponent: () => import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent) },
+      { path: 'admin/billing/new', loadComponent: () => import('./features/admin/create-invoice.component').then(m => m.CreateInvoiceComponent) },
       // Admin Portal
       {
         path: 'admin/dashboard.component',
-        loadComponent: () => import('./features/admin/dashboard.component').then(m => m.AdminDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'admin/beds.component',
@@ -105,7 +109,7 @@ export const routes: Routes = [
       // Patient Portal
       {
         path: 'patient/dashboard.component',
-        loadComponent: () => import('./features/patient/dashboard.component').then(m => m.PatientDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'patient/book.component',
@@ -113,7 +117,7 @@ export const routes: Routes = [
       },
       {
         path: 'patient/queue.component',
-        loadComponent: () => import('./features/patient/queue.component').then(m => m.PatientQueue)
+        loadComponent: () => import('./features/appointments/appointments.component').then(m => m.AppointmentsComponent)
       },
       {
         path: 'patient/records',
@@ -124,6 +128,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/patient/billing.component').then(m => m.PatientBilling)
       },
 
+      { path: 'cases', loadComponent: () => import('./features/case/cases.component').then(m => m.CasesComponent) },
       // Shared Cases Lifecycle detail route
       {
         path: 'cases/:id',
@@ -133,7 +138,7 @@ export const routes: Routes = [
       // Pharmacist Portal
       {
         path: 'pharmacist/dashboard.component',
-        loadComponent: () => import('./features/pharmacist/dashboard.component').then(m => m.PharmacistDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'pharmacist/dispensing',
@@ -147,7 +152,7 @@ export const routes: Routes = [
       // Lab Portal
       {
         path: 'lab/dashboard.component',
-        loadComponent: () => import('./features/lab/dashboard.component').then(m => m.LabDashboard)
+        loadComponent: () => import('./features/workspace/workspace.component').then(m => m.WorkspaceComponent)
       },
       {
         path: 'lab/samples',

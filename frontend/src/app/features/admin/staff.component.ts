@@ -45,8 +45,8 @@ export class AdminStaff implements OnInit {
   readonly successMessage = signal<string | null>(null);
 
   // Search & Filters
-  searchQuery = '';
-  selectedRole = 'ALL';
+  searchQuery = signal('');
+  selectedRole = signal('ALL');
 
   // File upload fields
   selectedFile: File | null = null;
@@ -71,10 +71,10 @@ export class AdminStaff implements OnInit {
 
   readonly filteredStaff = computed(() => {
     let list = this.staffList();
-    if (this.selectedRole !== 'ALL') {
-      list = list.filter(s => s.role.toLowerCase() === this.selectedRole.toLowerCase());
+    if (this.selectedRole() !== 'ALL') {
+      list = list.filter(s => s.role.toLowerCase() === this.selectedRole().toLowerCase());
     }
-    const q = this.searchQuery.toLowerCase().trim();
+    const q = this.searchQuery().toLowerCase().trim();
     if (!q) return list;
     return list.filter(s =>
       s.name.toLowerCase().includes(q) ||
@@ -320,12 +320,12 @@ export class AdminStaff implements OnInit {
   }
 
   downloadSampleCSV(): void {
-    const csvContent = 'name,email,role,department,specialty,employee_id\n' +
-      'Dr. Sameer Joshi,sameer.joshi@hospital.org,doctor,Cardiology,Interventional Cardiology,EMP-201\n' +
-      'Nurse Priya Nair,priya.nair@hospital.org,nurse,Nursing & Wards,ICU Specialist,EMP-202\n' +
-      'Vikram Shah,vikram.shah@hospital.org,pharmacist,Pharmacy,Clinical Dispensing,EMP-203\n' +
-      'Dr. Ritu Sen,ritu.sen@hospital.org,lab,Laboratory Services,Microbiology,EMP-204\n' +
-      'Neha Kapoor,neha.kapoor@hospital.org,receptionist,General Medicine,Patient Admissions,EMP-205';
+    const csvContent = 'name,email,role,department,specialty,employee_id,password\n' +
+      'Dr. Sameer Joshi,sameer.joshi@hospital.org,doctor,Cardiology,Interventional Cardiology,EMP-201,\n' +
+      'Nurse Priya Nair,priya.nair@hospital.org,nurse,Nursing & Wards,ICU Specialist,EMP-202,\n' +
+      'Vikram Shah,vikram.shah@hospital.org,pharmacist,Pharmacy,Clinical Dispensing,EMP-203,\n' +
+      'Dr. Ritu Sen,ritu.sen@hospital.org,lab,Laboratory Services,Microbiology,EMP-204,\n' +
+      'Neha Kapoor,neha.kapoor@hospital.org,receptionist,General Medicine,Patient Admissions,EMP-205,';
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

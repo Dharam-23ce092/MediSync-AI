@@ -8,7 +8,7 @@ const router = Router();
 // Get all audit logs (Admin only)
 router.get('/', authenticateJWT, authorizeRoles(['admin']), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const logs = await AuditLog.find().sort({ timestamp: -1 }).limit(150);
+    const logs = await AuditLog.find({ hospital_id: req.user?.hospital_id }).sort({ timestamp: -1 }).limit(150);
     return res.json({
       success: true,
       data: logs

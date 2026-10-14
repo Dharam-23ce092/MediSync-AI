@@ -122,7 +122,7 @@ import { VitalsService, PatientVital } from '../../core/services/vitals.service'
             </div>
             <div class="info-item" *ngIf="b.caseNumber">
               <span class="lbl">Case Link:</span>
-              <a [routerLink]="['/cases', b.caseNumber]" (click)="closeModal()" class="case-link">Case #{{ b.caseNumber }}</a>
+              <a [routerLink]="['/cases', b.caseId]" (click)="closeModal()" class="case-link">Case #{{ b.caseNumber }}</a>
             </div>
           </div>
 
@@ -358,10 +358,10 @@ export class NursePatients implements OnInit {
   isModalOpen = signal(false);
   selectedBed = signal<Bed | null>(null);
 
-  formHr = 75;
-  formBp = '120/80';
-  formTemp = 98.6;
-  formSpo2 = 98;
+  formHr: number | null = null;
+  formBp = '';
+  formTemp: number | null = null;
+  formSpo2: number | null = null;
   formNotes = '';
   savingVitals = signal(false);
   successMessage = signal<string | null>(null);
@@ -415,19 +415,11 @@ export class NursePatients implements OnInit {
   onAction(event: { action: string, row: any }) {
     if (event.action === 'logVitals') {
       this.selectedBed.set(event.row);
-      // Try to find current vitals for this bed
-      const cur = this.vitalsService.vitals().find(v => v.bed === event.row.name);
-      if (cur) {
-        this.formHr = cur.hr;
-        this.formBp = cur.bp;
-        this.formTemp = cur.temp;
-        this.formSpo2 = cur.spo2;
-      } else {
-        this.formHr = 75;
-        this.formBp = '120/80';
-        this.formTemp = 98.6;
-        this.formSpo2 = 98;
-      }
+      // Every entry is a new observation; never silently reuse an earlier reading.
+      this.formHr = null;
+      this.formBp = '';
+      this.formTemp = null;
+      this.formSpo2 = null;
       this.formNotes = '';
       this.isModalOpen.set(true);
     }
@@ -441,6 +433,10 @@ export class NursePatients implements OnInit {
   async saveVitals() {
     const b = this.selectedBed();
     if (!b) return;
+    if (this.formHr == null || this.formTemp == null || this.formSpo2 == null || !/^\d{2,3}\/\d{2,3}$/.test(this.formBp.trim())) {
+      this.errorMessage.set('Enter each measured vital sign and blood pressure as systolic/diastolic.');
+      return;
+    }
 
     this.savingVitals.set(true);
     this.errorMessage.set(null);

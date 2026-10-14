@@ -5,6 +5,7 @@ import { BaseCard } from '../../shared/components/base-card/base-card.component'
 import { BaseModal } from '../../shared/components/base-modal/base-modal.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { BedService, Bed } from '../../core/services/bed.service';
+import { DoctorService } from '../../core/services/doctor.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RouterModule } from '@angular/router';
 
@@ -36,6 +37,7 @@ import { RouterModule } from '@angular/router';
         </div>
       </div>
 
+      <details class="detail-sub-box"><summary>Add a bed to this hospital</summary><div class="alloc-form" style="display:flex;gap:12px;flex-wrap:wrap;padding-top:16px"><label>Bed name<input class="alloc-input" [(ngModel)]="newBedName" placeholder="e.g. Ward A / Bed 04" /></label><label>Ward category<select class="alloc-input" [(ngModel)]="newBedType"><option>General Ward</option><option>ICU</option><option>Private Room</option></select></label><button class="filter-tab-btn" [disabled]="actionSaving() || !newBedName.trim()" (click)="createBed()">Add bed</button></div></details>
       <!-- Status banners -->
       <div class="bed-status-banner loading" *ngIf="bedService.loading()">
         Loading bed map from server...
@@ -92,7 +94,7 @@ import { RouterModule } from '@angular/router';
 
       <!-- Visual Beds Map Grid -->
       <div class="beds-matrix-grid">
-        <div *ngFor="let bed of filteredBeds()" class="bed-item-wrapper" (click)="onBedClick(bed)">
+        <div *ngFor="let bed of filteredBeds()" class="bed-item-wrapper" role="button" tabindex="0" [attr.aria-label]="bed.name + ' — ' + bed.status" (keydown.enter)="onBedClick(bed)" (keydown.space)="$event.preventDefault(); onBedClick(bed)" (click)="onBedClick(bed)">
           <app-base-card
             [interactive]="true"
             [border]="true"
@@ -184,7 +186,7 @@ import { RouterModule } from '@angular/router';
             <div class="bed-case-banner" *ngIf="bed.diagnosis || bed.caseNumber">
               <div class="case-header-line">
                 <span class="case-badge">Case #{{ bed.caseNumber || 'Active' }}</span>
-                <a *ngIf="bed.caseNumber" [routerLink]="['/cases', bed.caseNumber]" (click)="closeModal()" class="view-case-link">
+                <a *ngIf="bed.caseId" [routerLink]="['/cases', bed.caseId]" (click)="closeModal()" class="view-case-link">
                   Open Case File →
                 </a>
               </div>
@@ -222,7 +224,7 @@ import { RouterModule } from '@angular/router';
               </div>
               <div class="form-block margin-top-sm">
                 <label class="form-label">Assign Primary Consultant:</label>
-                <input type="text" [(ngModel)]="allocationDoctor" class="alloc-input" placeholder="Dr. Devam Patel" [disabled]="actionSaving()" />
+                <select [(ngModel)]="allocationDoctor" class="alloc-input" [disabled]="actionSaving()"><option value="">Select consultant</option><option *ngFor="let doctor of doctorService.doctors()" [value]="doctor.id">{{ doctor.name }} · {{ doctor.specialty }}</option></select>
               </div>
             </div>
           </div>
@@ -231,7 +233,7 @@ import { RouterModule } from '@angular/router';
           <div class="cleaning-note" *ngIf="bed.status === 'cleaning'">
             <span class="cleaning-icon">🧹</span>
             <p class="cleaning-text">
-              Housekeeping was alerted to sanitize this bed.
+              This bed is awaiting sanitization.
               Do not assign any patient until sanitation and safety check are complete.
             </p>
           </div>
@@ -241,6 +243,7 @@ import { RouterModule } from '@angular/router';
           <button class="modal-close-btn" (click)="closeModal()" [disabled]="actionSaving()">Cancel</button>
 
           <!-- Conditionally render Action Buttons -->
+          <button *ngIf="selectedBed()?.status === 'reserved'" class="mark-ready-btn" [disabled]="actionSaving()" (click)="releaseReservation()">Release reservation for allocation</button>
           <button
             *ngIf="selectedBed()?.status === 'occupied'"
             class="discharge-action-btn"
@@ -605,7 +608,7 @@ import { RouterModule } from '@angular/router';
     }
     .alloc-select:focus, .alloc-input:focus {
       border-color: var(--color-primary);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
     }
     .alloc-input:disabled {
       opacity: 0.6;
@@ -691,6 +694,7 @@ import { RouterModule } from '@angular/router';
 })
 export class AdminBeds {
   protected bedService = inject(BedService);
+  protected doctorService = inject(DoctorService);
   private authService = inject(AuthService);
 
   selectedType = signal<string>('ALL');
@@ -726,12 +730,16 @@ export class AdminBeds {
   bedSuccess = signal<string | null>(null);
   bedError = signal<string | null>(null);
 
+  newBedName = '';
+  newBedType = 'General Ward';
+  async createBed() { if(this.actionSaving())return;this.actionSaving.set(true);this.bedError.set(null);try{await this.bedService.createBed(this.newBedName,this.newBedType);this.newBedName='';this.bedSuccess.set('Bed added and ready for allocation.');}catch{this.bedError.set(this.bedService.error());}finally{this.actionSaving.set(false);}}
   allocationUhid = '';
   allocationDoctor = '';
 
   ngOnInit() {
     const currentUser = this.authService.currentUser();
-    this.allocationDoctor = currentUser?.name || 'Dr. Devam Patel';
+    this.allocationDoctor = currentUser?.role === 'doctor' ? currentUser.userId || '' : '';
+    void this.doctorService.loadDoctors();
     void this.bedService.loadBeds();
   }
 
@@ -748,6 +756,19 @@ export class AdminBeds {
     this.bedSuccess.set(null);
   }
 
+  async releaseReservation() {
+    const bed = this.selectedBed();
+    if (!bed) return;
+    this.actionSaving.set(true);
+    try {
+      await this.bedService.releaseReservation(bed.id);
+      this.isModalOpen.set(false);
+      this.selectedBed.set(null);
+      this.bedSuccess.set('Reservation released. Select the available bed to complete an admission.');
+    } catch { this.bedError.set(this.bedService.error()); }
+    finally { this.actionSaving.set(false); }
+  }
+
   async dischargePatient() {
     const bed = this.selectedBed();
     if (!bed) return;
@@ -756,7 +777,8 @@ export class AdminBeds {
     try {
       await this.bedService.dischargeBed(bed.id);
       this.bedSuccess.set(`Bed ${bed.name} discharged and sent for cleaning.`);
-      this.closeModal();
+      this.isModalOpen.set(false);
+      this.selectedBed.set(null);
       setTimeout(() => this.bedSuccess.set(null), 4000);
     } catch {
       this.bedError.set(this.bedService.error() || 'Failed to discharge bed.');
@@ -774,7 +796,8 @@ export class AdminBeds {
     try {
       await this.bedService.markReady(bed.id);
       this.bedSuccess.set(`Bed ${bed.name} is now clean and AVAILABLE for admissions.`);
-      this.closeModal();
+      this.isModalOpen.set(false);
+      this.selectedBed.set(null);
       setTimeout(() => this.bedSuccess.set(null), 4000);
     } catch {
       this.bedError.set(this.bedService.error() || 'Failed to mark bed ready.');
@@ -785,7 +808,7 @@ export class AdminBeds {
 
   async allocateBed() {
     const bed = this.selectedBed();
-    if (!bed || !this.allocationUhid.trim()) return;
+    if (!bed || !this.allocationUhid.trim() || !this.allocationDoctor || this.actionSaving()) return;
 
     this.actionSaving.set(true);
     this.bedError.set(null);
@@ -794,10 +817,11 @@ export class AdminBeds {
         bed.id,
         this.allocationUhid.trim(),
         'Patient',
-        this.allocationDoctor || 'Dr. Devam Patel'
+        this.allocationDoctor
       );
       this.bedSuccess.set(`Bed ${bed.name} allocated to UHID ${this.allocationUhid}.`);
-      this.closeModal();
+      this.isModalOpen.set(false);
+      this.selectedBed.set(null);
       setTimeout(() => this.bedSuccess.set(null), 4000);
     } catch {
       this.bedError.set(this.bedService.error() || 'Failed to allocate bed.');

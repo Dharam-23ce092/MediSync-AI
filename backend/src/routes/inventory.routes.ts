@@ -1,57 +1,162 @@
-import { Router, Response } from 'express';
-import { pool } from '../config/postgres';
-import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth.middleware';
-import { authorizeRoles } from '../middleware/role.middleware';
-import { logAudit } from '../utils/audit';
-
+import { Router } from "express";
+import { pool } from "../config/postgres";
+import { authenticateJWT } from "../middleware/auth.middleware";
+import { requireTenant, TenantRequest } from "../middleware/tenant.middleware";
+import { authorizeRoles } from "../middleware/role.middleware";
+import { newId, requireValue, transaction } from "../utils/workflow";
 const router = Router();
-
-// Get all inventory items
-router.get('/', authenticateJWT, authorizeRoles(['pharmacist', 'admin']), async (req: AuthenticatedRequest, res: Response) => {
+router.use(
+  authenticateJWT,
+  requireTenant,
+  authorizeRoles(["pharmacist", "admin"]),
+);
+router.get("/", async (req: TenantRequest, res, next) => {
   try {
-    const result = await pool.query(
-      `SELECT id, name, category, batch, qty, unit, reorder_level, unit_price, expiry, manufacturer, status
-       FROM inventory
-       ORDER BY
-         CASE status
-           WHEN 'Out of Stock' THEN 1
-           WHEN 'Low Stock' THEN 2
-           ELSE 3
-         END,
-         name ASC`
+    const r = await pool.query(
+      `SELECT i.*,EXISTS(SELECT 1 FROM inventory_requests r WHERE r.inventory_id=i.id AND r.status='Requested') as "reorderPending" FROM inventory i WHERE i.hospital_id=$1 ORDER BY i.name,i.expiry`,
+      [req.hospitalId],
     );
-
-    return res.json({
-      success: true,
-      data: result.rows
-    });
-  } catch (error: any) {
-    console.error('Error fetching inventory:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    res.json({ success: true, data: r.rows });
+  } catch (error) {
+    next(error);
   }
 });
-
-// Reorder request for an inventory item
-router.patch('/:id/reorder', authenticateJWT, authorizeRoles(['pharmacist', 'admin']), async (req: AuthenticatedRequest, res: Response) => {
-  const { id } = req.params;
-
+router.post("/", async (req: TenantRequest, res, next) => {
   try {
-    const itemRes = await pool.query('SELECT id, name, qty FROM inventory WHERE id = $1', [id]);
-    if (itemRes.rowCount === 0) {
-      return res.status(404).json({ success: false, message: 'Inventory item not found' });
-    }
-
-    // In a real system this would trigger a purchase order. For now, log the audit.
-    await logAudit(req, `INVENTORY_REORDER: Reorder requested for ${itemRes.rows[0].name} (current qty: ${itemRes.rows[0].qty})`, 'inventory', 'info');
-
-    return res.json({
-      success: true,
-      message: `Reorder request submitted for ${itemRes.rows[0].name}`
+    const {
+      name,
+      category,
+      batch,
+      qty,
+      unit,
+      reorder_level,
+      unit_price,
+      expiry,
+      manufacturer,
+    } = req.body;
+    requireValue(
+      typeof name === "string" &&
+        name.trim() &&
+        typeof batch === "string" &&
+        batch.trim() &&
+        typeof unit === "string" &&
+        unit.trim(),
+      "Medicine name, batch and unit are required.",
+    );
+    requireValue(
+      Number.isInteger(qty) &&
+        qty > 0 &&
+        Number.isInteger(reorder_level) &&
+        reorder_level >= 0 &&
+        typeof unit_price === "number" &&
+        Number.isFinite(unit_price) &&
+        unit_price >= 0,
+      "Enter valid quantity, reorder level and unit price.",
+    );
+    requireValue(
+      typeof expiry === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(expiry) &&
+        Number.isFinite(new Date(expiry).getTime()) &&
+        new Date(expiry) >= new Date(new Date().toDateString()),
+      "Enter an unexpired batch date.",
+    );
+    const data = await transaction(async (client) => {
+      await client.query("SELECT id FROM hospitals WHERE id=$1 FOR UPDATE", [
+        req.hospitalId,
+      ]);
+      const duplicate = await client.query(
+        "SELECT id FROM inventory WHERE hospital_id=$1 AND lower(name)=lower($2) AND lower(batch)=lower($3)",
+        [req.hospitalId, name.trim(), batch.trim()],
+      );
+      requireValue(
+        !duplicate.rowCount,
+        "This batch already exists. Use Receive stock on that batch.",
+        409,
+      );
+      return (
+        await client.query(
+          `INSERT INTO inventory(id,hospital_id,name,category,batch,qty,unit,reorder_level,unit_price,expiry,manufacturer,status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+          [
+            newId("INV"),
+            req.hospitalId,
+            name.trim(),
+            category || "Medicine",
+            batch.trim(),
+            qty,
+            unit.trim(),
+            reorder_level,
+            unit_price,
+            expiry,
+            manufacturer || "",
+            qty <= reorder_level ? "Low Stock" : "In Stock",
+          ],
+        )
+      ).rows[0];
     });
-  } catch (error: any) {
-    console.error('Error processing reorder:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    res.status(201).json({ success: true, data });
+  } catch (error) {
+    next(error);
   }
 });
-
+router.patch("/:id/reorder", async (req: TenantRequest, res, next) => {
+  try {
+    await transaction(async (client) => {
+      const item = (
+        await client.query(
+          "SELECT * FROM inventory WHERE id=$1 AND hospital_id=$2 FOR UPDATE",
+          [req.params.id, req.hospitalId],
+        )
+      ).rows[0];
+      requireValue(item, "Inventory item not found.", 404);
+      const pending = await client.query(
+        "SELECT id FROM inventory_requests WHERE inventory_id=$1 AND status='Requested'",
+        [item.id],
+      );
+      if (!pending.rowCount)
+        await client.query(
+          "INSERT INTO inventory_requests(id,hospital_id,inventory_id,requested_by) VALUES($1,$2,$3,$4)",
+          [newId("REQ"), req.hospitalId, item.id, req.user!.userId],
+        );
+    });
+    res.json({
+      success: true,
+      message:
+        "Internal replenishment request recorded. No order has been sent to a supplier.",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+router.patch("/:id/receive", async (req: TenantRequest, res, next) => {
+  try {
+    requireValue(
+      Number.isInteger(req.body.quantity) && req.body.quantity > 0,
+      "Enter the quantity physically received.",
+    );
+    await transaction(async (client) => {
+      const item = (
+        await client.query(
+          "SELECT * FROM inventory WHERE id=$1 AND hospital_id=$2 FOR UPDATE",
+          [req.params.id, req.hospitalId],
+        )
+      ).rows[0];
+      requireValue(item, "Inventory item not found.", 404);
+      requireValue(
+        new Date(item.expiry) >= new Date(new Date().toDateString()),
+        "This batch has expired. Create the new received batch instead.",
+      );
+      await client.query(
+        "UPDATE inventory SET qty=qty+$1,status=CASE WHEN qty+$1<=reorder_level THEN 'Low Stock' ELSE 'In Stock' END WHERE id=$2",
+        [req.body.quantity, item.id],
+      );
+      await client.query(
+        "UPDATE inventory_requests SET status='Received' WHERE inventory_id=$1 AND status='Requested'",
+        [item.id],
+      );
+    });
+    res.json({ success: true, message: "Received stock recorded." });
+  } catch (error) {
+    next(error);
+  }
+});
 export default router;

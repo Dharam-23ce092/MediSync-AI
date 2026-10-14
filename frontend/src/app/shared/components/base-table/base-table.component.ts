@@ -9,6 +9,7 @@ export interface TableAction {
   action: string;
   class?: string;
   tooltip?: string;
+  visible?: (row: any) => boolean;
 }
 
 export interface TableColumn {
@@ -48,8 +49,19 @@ export class BaseTable {
   searchTerm: string = '';
   protected readonly Math = Math;
 
+  get filteredRows(): any[] {
+    const term=this.searchTerm.trim().toLowerCase();
+    if (!term || this.searchChange.observed) return this.data;
+    return this.data.filter(row=>this.columns.some(col=>String(row[col.key] ?? '').toLowerCase().includes(term)));
+  }
+  get effectiveTotal(): number { return this.pageChange.observed ? this.totalItems : this.filteredRows.length; }
+  get visibleRows(): any[] {
+    if (!this.showPagination || this.pageChange.observed) return this.filteredRows;
+    const page=Math.min(this.currentPage,this.totalPages);
+    return this.filteredRows.slice((page-1)*this.pageSize,page*this.pageSize);
+  }
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize) || 1;
+    return Math.ceil(this.effectiveTotal / this.pageSize) || 1;
   }
 
   get pages(): number[] {
@@ -61,11 +73,13 @@ export class BaseTable {
   }
 
   onSearch() {
+    this.currentPage=1;
     this.searchChange.emit(this.searchTerm);
   }
 
   onPageChange(page: number) {
     if (page >= 1 && page <= this.totalPages) {
+      this.currentPage=page;
       this.pageChange.emit(page);
     }
   }

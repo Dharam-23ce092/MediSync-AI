@@ -50,7 +50,7 @@
 
 /* Cards style */
 .clinical-card, .timeline-card {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px rgba(0,0,0,0.02);
@@ -242,7 +242,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   border: 2px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -343,3 +343,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+.linked-records { display:grid; gap:10px; }
+.linked-records h4 { margin-top:12px; }
+.linked-records pre { white-space:pre-wrap; }

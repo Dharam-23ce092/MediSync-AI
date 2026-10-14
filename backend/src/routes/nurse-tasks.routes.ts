@@ -10,8 +10,9 @@ router.get('/', authenticateJWT, authorizeRoles(['nurse', 'admin']), async (req:
   try {
     const result = await pool.query(
       `SELECT id, bed, patient_name as "patientName", task, scheduled_time as "scheduledTime",
-              priority, completed
+              priority, completed, case_id as "caseId", patient_id as "patientId"
        FROM nurse_tasks
+       WHERE hospital_id=$1 AND (case_id IS NULL OR completed=true OR case_id IN (SELECT id FROM cases WHERE status NOT IN ('discharged','closed','cancelled')))
        ORDER BY
          completed ASC,
          CASE priority
@@ -20,7 +21,7 @@ router.get('/', authenticateJWT, authorizeRoles(['nurse', 'admin']), async (req:
            WHEN 'low' THEN 3
            ELSE 4
          END,
-         scheduled_time ASC`
+         scheduled_time ASC`, [req.user?.hospital_id]
     );
 
     return res.json({
@@ -39,8 +40,8 @@ router.patch('/:id/toggle', authenticateJWT, authorizeRoles(['nurse', 'admin']),
 
   try {
     const result = await pool.query(
-      'UPDATE nurse_tasks SET completed = NOT completed WHERE id = $1 RETURNING id, completed',
-      [id]
+      'UPDATE nurse_tasks SET completed = NOT completed WHERE id = $1 AND hospital_id=$2 RETURNING id, completed',
+      [id,req.user?.hospital_id]
     );
 
     if (result.rowCount === 0) {

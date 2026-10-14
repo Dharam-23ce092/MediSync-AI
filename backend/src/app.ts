@@ -18,6 +18,7 @@ import auditRouter from './routes/audit.routes';
 import aiRouter from './routes/ai.routes';
 import consultationRouter from './routes/consultation.routes';
 import dashboardRouter from './routes/dashboard.routes';
+import overviewRouter from './routes/overview.routes';
 import hospitalRouter from './routes/hospital.routes';
 import staffRouter from './routes/staff.routes';
 import casesRouter from './routes/case.routes';
@@ -63,6 +64,7 @@ app.use('/api/audit-logs', auditRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/consultations', consultationRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/overview', overviewRouter);
 app.use('/api/hospitals', hospitalRouter);
 app.use('/api/staff', staffRouter);
 app.use('/api/cases', casesRouter);
@@ -80,7 +82,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Centralized Error Handling Middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Express Error Handler caught:', err);
+  if (!err.status || err.status >= 500) console.error('Express Error Handler caught:', err);
   const status = err.status || 500;
   const message = err.message || 'Internal Server Error';
 

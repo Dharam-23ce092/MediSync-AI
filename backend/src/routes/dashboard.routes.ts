@@ -2,9 +2,17 @@ import { Router, Response } from 'express';
 import { pool } from '../config/postgres';
 import { VitalHistory } from '../models/mongo/schemas';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth.middleware';
+import { requireTenant } from '../middleware/tenant.middleware';
 import { authorizeRoles } from '../middleware/role.middleware';
 
 const router = Router();
+router.use(authenticateJWT, requireTenant);
+// All aggregate SQL is scoped to the authenticated hospital.
+const scopedQuery = (hospitalId: string | undefined, sql: string, params: any[] = []) => {
+ const clause = `hospital_id = $${params.length + 1}`;
+ const scoped = /\bWHERE\b/i.test(sql) ? sql.replace(/\bWHERE\b/i, `WHERE ${clause} AND`) : `${sql} WHERE ${clause}`;
+ return pool.query(scoped, [...params, hospitalId]);
+};
 
 // Admin dashboard aggregates
 router.get('/admin', authenticateJWT, authorizeRoles(['admin']), async (req: AuthenticatedRequest, res: Response) => {
@@ -12,15 +20,15 @@ router.get('/admin', authenticateJWT, authorizeRoles(['admin']), async (req: Aut
     const today = new Date().toISOString().split('T')[0];
 
     const [patientsToday, appointmentsToday, occupiedBeds, availableBeds, totalBeds, icuOccupied, icuTotal, outstandingBilling, prescriptionsToday] = await Promise.all([
-      pool.query("SELECT COUNT(*) as count FROM patients WHERE DATE(created_at) = $1", [today]),
-      pool.query("SELECT COUNT(*) as count FROM appointments WHERE DATE(appointment_time) = $1", [today]),
-      pool.query("SELECT COUNT(*) as count FROM beds WHERE status = 'occupied'"),
-      pool.query("SELECT COUNT(*) as count FROM beds WHERE status = 'available'"),
-      pool.query("SELECT COUNT(*) as count FROM beds"),
-      pool.query("SELECT COUNT(*) as count FROM beds WHERE status = 'occupied' AND type = 'ICU'"),
-      pool.query("SELECT COUNT(*) as count FROM beds WHERE type = 'ICU'"),
-      pool.query("SELECT COALESCE(SUM(balance), 0) as total FROM billing WHERE status != 'PAID'"),
-      pool.query("SELECT COUNT(*) as count FROM prescriptions WHERE DATE(date) = $1", [today])
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM patients WHERE DATE(created_at) = $1", [today]),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM appointments WHERE DATE(appointment_time) = $1", [today]),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM beds WHERE status = 'occupied'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM beds WHERE status = 'available'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM beds"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM beds WHERE status = 'occupied' AND type = 'ICU'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM beds WHERE type = 'ICU'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COALESCE(SUM(balance), 0) as total FROM billing WHERE status != 'PAID'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM prescriptions WHERE DATE(date) = $1", [today])
     ]);
 
     const icuTotalNum = parseInt(icuTotal.rows[0].count) || 0;
@@ -56,21 +64,23 @@ router.get('/doctor', authenticateJWT, authorizeRoles(['doctor']), async (req: A
 
     const today = new Date().toISOString().split('T')[0];
 
-    const [appointmentsToday, waitingCount] = await Promise.all([
-      pool.query(
+    const [appointmentsToday, waitingCount, consultingCount] = await Promise.all([
+      scopedQuery(req.user?.hospital_id,
         "SELECT COUNT(*) as count FROM appointments WHERE doctor_id = $1 AND DATE(appointment_time) = $2",
         [user.userId, today]
       ),
-      pool.query(
+      scopedQuery(req.user?.hospital_id,
         "SELECT COUNT(*) as count FROM appointments WHERE doctor_id = $1 AND DATE(appointment_time) = $2 AND status = 'Waiting'",
         [user.userId, today]
-      )
+      ),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM appointments WHERE doctor_id=$1 AND DATE(appointment_time)=$2 AND status='In Consultation'", [user.userId,today])
     ]);
 
     // Count critical vitals from MongoDB
     let criticalVitalsCount = 0;
     try {
-      criticalVitalsCount = await VitalHistory.countDocuments({ status: 'critical' });
+      const patients = await scopedQuery(req.user?.hospital_id, 'SELECT DISTINCT p.uhid FROM patients p JOIN cases c ON c.patient_id=p.id WHERE c.assigned_doctor=$1'.replace('SELECT DISTINCT p.uhid FROM patients p JOIN cases c ON c.patient_id=p.id WHERE c.assigned_doctor=$1', 'SELECT uhid FROM patients WHERE id IN (SELECT patient_id FROM cases WHERE assigned_doctor=$1)'), [user.userId]);
+      criticalVitalsCount = await VitalHistory.countDocuments({ uhid: { $in: patients.rows.map(p=>p.uhid) }, status: 'critical' });
     } catch {
       // MongoDB may not be available
     }
@@ -83,7 +93,7 @@ router.get('/doctor', authenticateJWT, authorizeRoles(['doctor']), async (req: A
       data: {
         appointmentsToday: totalToday,
         waitingPatients: waiting,
-        inConsultation: totalToday - waiting,
+        inConsultation: Number(consultingCount.rows[0].count),
         criticalVitals: criticalVitalsCount
       }
     });
@@ -101,7 +111,9 @@ router.get('/nurse', authenticateJWT, authorizeRoles(['nurse', 'admin', 'doctor'
     let totalCount = 0;
 
     try {
+      const patients = await scopedQuery(req.user?.hospital_id, 'SELECT uhid FROM patients');
       const pipeline = [
+        { $match: { uhid: { $in: patients.rows.map(p=>p.uhid) } } },
         {
           $sort: { uhid: 1, recordedAt: -1 as const }
         },
@@ -138,10 +150,11 @@ router.get('/nurse', authenticateJWT, authorizeRoles(['nurse', 'admin', 'doctor'
 // Pharmacist dashboard aggregates (real inventory table)
 router.get('/pharmacist', authenticateJWT, authorizeRoles(['pharmacist', 'admin']), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const [pending, dispensedToday, lowStock] = await Promise.all([
-      pool.query("SELECT COUNT(*) as count FROM prescriptions WHERE status = 'Pending'"),
-      pool.query("SELECT COUNT(*) as count FROM prescriptions WHERE status = 'Dispensed' AND DATE(date) = CURRENT_DATE"),
-      pool.query("SELECT COUNT(*) as count FROM inventory WHERE status IN ('Low Stock', 'Out of Stock')")
+    const [pending, dispensedToday, lowStock, expiring] = await Promise.all([
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM prescriptions WHERE status = 'Pending'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM prescriptions WHERE status = 'Dispensed' AND DATE(date) = CURRENT_DATE"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM inventory WHERE qty <= reorder_level"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM inventory WHERE expiry BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days' AND qty > 0")
     ]);
 
     return res.json({
@@ -149,7 +162,8 @@ router.get('/pharmacist', authenticateJWT, authorizeRoles(['pharmacist', 'admin'
       data: {
         pendingDispensations: parseInt(pending.rows[0].count) || 0,
         dispensedToday: parseInt(dispensedToday.rows[0].count) || 0,
-        lowStockAlarms: parseInt(lowStock.rows[0].count) || 0
+        lowStockAlarms: parseInt(lowStock.rows[0].count) || 0,
+        expiringBatches: Number(expiring.rows[0].count)
       }
     });
   } catch (error: any) {
@@ -162,10 +176,10 @@ router.get('/pharmacist', authenticateJWT, authorizeRoles(['pharmacist', 'admin'
 router.get('/lab', authenticateJWT, authorizeRoles(['lab', 'admin']), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const [pending, collected, completed, critical] = await Promise.all([
-      pool.query("SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Received'"),
-      pool.query("SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Collected'"),
-      pool.query("SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Completed'"),
-      pool.query("SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Completed' AND results IS NOT NULL AND results->>'status' = 'critical'")
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Received'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Collected'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Completed'"),
+      scopedQuery(req.user?.hospital_id, "SELECT COUNT(*) as count FROM lab_orders WHERE status = 'Completed' AND results IS NOT NULL AND results->>'status' = 'critical'")
     ]);
 
     return res.json({

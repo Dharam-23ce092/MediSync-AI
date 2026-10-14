@@ -6,9 +6,13 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
+    "test:workflows": "npm run build && node tests/workflows.cjs",
     "start": "node dist/index.js",
     "seed": "ts-node src/data/seed.ts",
-    "setup-db": "ts-node src/data/setup-db.ts"
+    "migrate": "ts-node src/data/migrate-workflows.ts",
+    "setup-db": "ts-node src/data/setup-db.ts",
+    "export:retrieval": "ts-node src/data/export-retrieval.ts",
+    "test:seed": "npm run build && node tests/seed-verification.cjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

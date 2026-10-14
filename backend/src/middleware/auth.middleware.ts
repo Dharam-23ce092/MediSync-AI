@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { pool } from '../config/postgres';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -15,7 +16,7 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const authenticateJWT = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!JWT_SECRET) {
     console.error('CRITICAL: JWT_SECRET environment variable is missing.');
     return res.status(500).json({
@@ -39,6 +40,11 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const account = await pool.query('SELECT role,hospital_id,is_active,created_at FROM users WHERE id=$1', [decoded.userId]);
+    const current = account.rows[0];
+    if (!current?.is_active || current.role !== decoded.role || current.hospital_id !== decoded.hospital_id || !decoded.iat || decoded.iat < Math.floor(new Date(current.created_at).getTime()/1000)) {
+      return res.status(401).json({success:false,message:'Account or access has changed. Sign in again.',errorCode:'INVALID_TOKEN'});
+    }
     req.user = decoded;
     next();
   } catch (error) {

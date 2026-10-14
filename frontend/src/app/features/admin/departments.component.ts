@@ -774,7 +774,7 @@ export class AdminDepartments implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
-  searchQuery = '';
+  searchQuery = signal('');
 
   // Modal State
   readonly showModal = signal(false);
@@ -807,7 +807,7 @@ export class AdminDepartments implements OnInit {
   });
 
   readonly filteredDepartments = computed(() => {
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.departments();
     return this.departments().filter(d =>
       d.name.toLowerCase().includes(query) ||

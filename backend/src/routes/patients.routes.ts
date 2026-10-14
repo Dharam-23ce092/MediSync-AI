@@ -10,12 +10,12 @@ const router = Router();
 router.get('/', authenticateJWT, authorizeRoles(['doctor', 'nurse', 'admin', 'pharmacist', 'lab']), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const search = req.query.search as string;
-    let query = 'SELECT * FROM patients ORDER BY created_at DESC';
-    let values: any[] = [];
+    let query = 'SELECT * FROM patients WHERE hospital_id=$1 ORDER BY created_at DESC';
+    let values: any[] = [req.user?.hospital_id];
 
     if (search) {
-      query = 'SELECT * FROM patients WHERE name ILIKE $1 OR uhid ILIKE $1 ORDER BY created_at DESC';
-      values = [`%${search}%`];
+      query = 'SELECT * FROM patients WHERE hospital_id=$2 AND (name ILIKE $1 OR uhid ILIKE $1) ORDER BY created_at DESC';
+      values = [`%${search}%`,req.user?.hospital_id];
     }
 
     const result = await pool.query(query, values);
@@ -41,7 +41,7 @@ router.get('/', authenticateJWT, authorizeRoles(['doctor', 'nurse', 'admin', 'ph
 router.get('/:id', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM patients WHERE id = $1 OR uhid = $1', [id]);
+    const result = await pool.query('SELECT * FROM patients WHERE (id = $1 OR uhid = $1) AND hospital_id=$2', [id,req.user?.hospital_id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Patient not found', errorCode: 'PATIENT_NOT_FOUND' });
     }
@@ -88,8 +88,8 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse']), 
     const id = `P${Date.now()}`;
 
     const insertResult = await pool.query(
-      'INSERT INTO patients (id, uhid, name, age, gender, blood_group, emergency_contact, allergies, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-      [id, uhid, name, age, gender, bloodGroup, emergencyContact, allergies || null, status || 'OPD']
+      'INSERT INTO patients (hospital_id, id, uhid, name, age, gender, blood_group, emergency_contact, allergies, status) VALUES ($10, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+      [id, uhid, name, age, gender, bloodGroup, emergencyContact, allergies || null, status || 'OPD',req.user?.hospital_id]
     );
 
     const p = insertResult.rows[0];
@@ -119,7 +119,7 @@ router.patch('/:id', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse'
   const { name, age, gender, bloodGroup, emergencyContact, allergies, status } = req.body;
 
   try {
-    const existing = await pool.query('SELECT * FROM patients WHERE id = $1 OR uhid = $1', [id]);
+    const existing = await pool.query('SELECT * FROM patients WHERE (id = $1 OR uhid = $1) AND hospital_id=$2', [id,req.user?.hospital_id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Patient not found', errorCode: 'PATIENT_NOT_FOUND' });
     }

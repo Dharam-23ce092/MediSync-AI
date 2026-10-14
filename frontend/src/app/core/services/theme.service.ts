@@ -12,7 +12,7 @@ export class ThemeService {
   constructor() {
     // Load from localStorage if present
     const savedTheme = localStorage.getItem('medisync-theme');
-    if (savedTheme === 'light') {
+    if (savedTheme !== 'dark') {
       this.isLightSignal.set(true);
       document.documentElement.classList.add('light-theme');
       document.body.classList.add('light-theme');

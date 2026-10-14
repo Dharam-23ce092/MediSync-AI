@@ -32,6 +32,12 @@ interface CaseDetails {
   bloodGroup: string;
   doctorName?: string;
   timeline: TimelineEvent[];
+  appointments: any[];
+  prescriptions: any[];
+  labs: any[];
+  invoices: any[];
+  beds: any[];
+  notes: any[];
 }
 
 @Component({

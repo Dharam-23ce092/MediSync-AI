@@ -55,7 +55,7 @@ interface PatientRecord {
           <button class="action-outline-btn" (click)="showPrescriptionHistory()" appTooltip="View past prescriptions" tooltipPosition="bottom">
             Prescription History
           </button>
-          <button class="action-outline-btn" (click)="orderLabTest()" appTooltip="Order lab diagnostic test" tooltipPosition="bottom">
+          <button class="action-outline-btn" (click)="showLabOrder.set(!showLabOrder())" appTooltip="Order lab diagnostic test" tooltipPosition="bottom">
             Order Lab Test
           </button>
           <button class="save-btn" (click)="saveConsultation()" [disabled]="savingConsultation()" appTooltip="Save records and complete session" tooltipPosition="left">
@@ -78,6 +78,11 @@ interface PatientRecord {
         {{ consultationService.error() }}
       </div>
 
+      <form *ngIf="showLabOrder()" class="consultation-banner" (ngSubmit)="orderLabTest()">
+        <label>Test requested <input name="labTest" [(ngModel)]="labTestName" placeholder="Enter test name" required /></label>
+        <label>Specimen <input name="specimen" [(ngModel)]="labSpecimen" placeholder="Enter required specimen" required /></label>
+        <button class="action-outline-btn" type="submit" [disabled]="orderingLab() || !labTestName.trim() || !labSpecimen.trim()">{{ orderingLab() ? 'Sending…' : 'Send to laboratory' }}</button>
+      </form>
       <!-- Main Columns Grid -->
       <div class="consultation-grid">
 
@@ -671,7 +676,7 @@ interface PatientRecord {
     .source-bubble {
       font-size: 10px;
       color: var(--color-text-muted);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
       border: 1px dashed var(--color-border);
       padding: 2px 8px;
       border-radius: var(--border-radius-sm);
@@ -795,7 +800,9 @@ export class DoctorConsultation implements OnInit {
   private appointmentService = inject(AppointmentService);
 
   patient = signal<PatientRecord | null>(null);
-  activeToken = signal<string>('21');
+  activeToken = signal<string>('');
+  activeAppointmentId = signal('');
+  activeCaseId = signal('');
 
   // Input states
   chiefComplaints = '';
@@ -816,6 +823,10 @@ export class DoctorConsultation implements OnInit {
   consultationSuccess = signal<string | null>(null);
   consultationError = signal<string | null>(null);
   labOrderError = signal<string | null>(null);
+  showLabOrder = signal(false);
+  orderingLab = signal(false);
+  labTestName = '';
+  labSpecimen = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -824,7 +835,7 @@ export class DoctorConsultation implements OnInit {
 
   ngOnInit() {
     this.route.params.subscribe(params => {
-      const id = params['id'] || 'P1001';
+      const id = params['id'];
       void this.loadPatient(id);
     });
   }
@@ -900,9 +911,14 @@ export class DoctorConsultation implements OnInit {
 
     this.patient.set(record);
 
-    const appts = this.appointmentService.forPatient(p.uhid);
-    const token = appts.length > 0 ? appts[0].token : '';
-    this.activeToken.set(token);
+    await this.appointmentService.loadAppointments(undefined, true);
+    const requested = this.route.snapshot.queryParamMap.get('appointmentId');
+    const appts = this.appointmentService.forPatient(p.uhid).filter(a => a.status === 'In Consultation' && (!requested || a.appointmentId === requested));
+    const active = appts.length === 1 ? appts[0] : null;
+    this.activeToken.set(active?.token || '');
+    this.activeAppointmentId.set(active?.appointmentId || '');
+    this.activeCaseId.set(active?.caseId || '');
+    if (!active) this.consultationError.set('Open a checked-in appointment from the consultation queue before saving.');
 
     this.prescribedMeds.set([]);
     this.chiefComplaints = '';
@@ -942,9 +958,9 @@ export class DoctorConsultation implements OnInit {
   checkDrugInteraction(medName: string, index: number) {
     if (!medName) return;
 
-    // Simulate drug allergy check (Amlodipine vs Penicillin group overlap warning)
+    // Exact text match only; this is not a drug-interaction decision engine.
     const nameLower = medName.toLowerCase();
-    if (nameLower.includes('amlo') || nameLower.includes('penicillin')) {
+    if (nameLower.includes('penicillin')) {
       const patientAllergies = this.patient()?.allergies || [];
       if (patientAllergies.includes('Penicillin')) {
         this.showDrugAlert.set(true);
@@ -952,32 +968,37 @@ export class DoctorConsultation implements OnInit {
     }
   }
   simulateOcrUpload() {
-    console.log('OCR upload feature pending implementation');
+    this.consultationError.set('OCR is not configured. Enter the verified clinical notes manually.');
   }
 
   showPrescriptionHistory() {
-    console.log('Prescription history feature pending implementation');
+    void this.consultationService.loadPatientHistory(this.patient()?.uhid || '');
   }
 
   async orderLabTest() {
     const pat = this.patient();
-    if (!pat) return;
+    if (!pat || this.orderingLab() || !this.labTestName.trim() || !this.labSpecimen.trim()) return;
 
-    const doctorName = this.authService.currentUser()?.name ?? 'Dr. Devam Patel';
+    const doctorName = this.authService.currentUser()?.name ?? '';
 
     this.labOrderError.set(null);
+    this.orderingLab.set(true);
     try {
       await this.labOrderService.createOrder({
         name: pat.name,
         name_subtitle: pat.uhid,
-        testName: 'Complete Blood Count (CBC Panel)',
+        testName: this.labTestName.trim(),
         doctor: doctorName,
-        specimen: 'Blood (EDTA Purple Vial)'
+        specimen: this.labSpecimen.trim(),
+        caseId: this.activeCaseId()
       });
-      this.consultationSuccess.set(`Lab order created for ${pat.name}. Sample collection queued at Central Pathology Lab.`);
+      this.consultationSuccess.set(`Lab order created for ${pat.name}. Awaiting sample collection.`);
+      this.showLabOrder.set(false);
+      this.labTestName = '';
+      this.labSpecimen = '';
     } catch {
       this.labOrderError.set(this.labOrderService.error() || 'Failed to create lab order.');
-    }
+    } finally { this.orderingLab.set(false); }
   }
 
   saveConsultation() {
@@ -986,41 +1007,26 @@ export class DoctorConsultation implements OnInit {
 
   private async saveConsultationAsync() {
     const pat = this.patient();
-    if (!pat) return;
+    if (!pat || this.savingConsultation()) return;
 
     const medDetails = this.prescribedMeds().map(m => `${m.name} (${m.dosage})`).join(' + ');
     const doctorName = this.authService.currentUser()?.name ?? 'Dr. Devam Patel';
-    const doctorId = this.authService.currentUser()?.userId || 'U1002';
+    const doctorId = this.authService.currentUser()?.userId || '';
 
     this.savingConsultation.set(true);
     this.consultationSuccess.set(null);
     this.consultationError.set(null);
 
     try {
-      const [prescriptionResult] = await Promise.all([
-        this.prescriptionService.createPrescription({
-          patientId: pat.id,
-          name: pat.name,
-          name_subtitle: pat.uhid,
-          doctor: doctorName,
-          drugDetails: medDetails || 'No medications prescribed'
-        }),
-        this.consultationService.saveConsultation({
-          appointmentId: this.activeToken() || `APPT-${Date.now()}`,
-          patientUhid: pat.uhid,
-          doctorId: doctorId,
-          chiefComplaint: this.chiefComplaints,
-          diagnosis: this.diagnosisInput || this.examinationNotes,
-          clinicalNotes: [
-            this.historyInput,
-            this.examinationNotes,
-            this.planInput
-          ].filter(Boolean).join('\n\n') || 'No additional clinical notes'
-        })
-      ]);
-
-      this.consultationSuccess.set('Consultation note saved to EHR successfully.');
-      await this.completeConsultation(pat.id, pat.name);
+      if (!this.activeAppointmentId()) throw new Error('No active appointment selected.');
+      await this.consultationService.saveConsultation({
+        appointmentId: this.activeAppointmentId(), patientUhid: pat.uhid, doctorId,
+        chiefComplaint: this.chiefComplaints, diagnosis: this.diagnosisInput,
+        clinicalNotes: [this.historyInput,this.examinationNotes,this.planInput,this.clinicalNotes].filter(Boolean).join('\n\n'),
+        medications: this.prescribedMeds()
+      });
+      await this.appointmentService.loadAppointments(undefined,true);
+      this.router.navigate(['/doctor/appointments']);
     } catch {
       this.consultationError.set(this.prescriptionService.error() || this.consultationService.error() || 'Failed to save consultation.');
     } finally {

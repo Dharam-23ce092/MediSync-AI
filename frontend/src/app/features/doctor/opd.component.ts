@@ -21,19 +21,20 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
         <div class="queue-stats">
           <div class="stat-pill accent" appTooltip="Next token to be called" tooltipPosition="bottom">
-            <span>Next Token:</span> <strong>Token 21</strong>
+            <span>Next Token:</span> <strong>{{ opdQueue()[0]?.token || '—' }}</strong>
           </div>
           <div class="stat-pill critical" appTooltip="Patients currently waiting in line" tooltipPosition="bottom">
-            <span>Total Waiting:</span> <strong>4</strong>
+            <span>Total Waiting:</span> <strong>{{ opdQueue().length }}</strong>
           </div>
         </div>
       </div>
 
+      <p role="alert" *ngIf="appointmentService.error()">{{ appointmentService.error() }}</p>
       <!-- Main Queue Table -->
       <app-base-card [border]="true" elevation="sm">
         <h3 class="card-title-header" card-header>
           Active Consultations Queue
-          <span class="room-indicator" appTooltip="Your assigned consulting room" tooltipPosition="left">Room 204 • Cardiology OPD</span>
+          <span class="room-indicator" appTooltip="Your assigned consulting room" tooltipPosition="left">Today’s checked-in appointments</span>
         </h3>
         <div card-body class="p-0">
           <app-base-table
@@ -168,7 +169,7 @@ export class DoctorOpd implements OnInit {
 
   opdQueue = signal<any[]>([]);
 
-  private appointmentService = inject(AppointmentService);
+  protected appointmentService = inject(AppointmentService);
   private authService = inject(AuthService);
 
   constructor(private router: Router) {
@@ -189,21 +190,21 @@ export class DoctorOpd implements OnInit {
   }
 
   onRowClick(row: any) {
-    void this.startConsultation(row.id);
+    void this.startConsultation(row);
   }
 
   onActionClick(event: { action: string, row: any }) {
     if (event.action === 'call') {
-      void this.startConsultation(event.row.id);
+      void this.startConsultation(event.row);
     }
   }
 
-  async startConsultation(patientId: string) {
+  async startConsultation(row: any) {
     try {
-      await this.appointmentService.startConsultation(patientId);
+      if (row.status !== 'In Consultation') await this.appointmentService.startConsultation(row.appointmentId);
     } catch {
-      // Navigate even if status sync fails so the doctor can continue consulting.
+      return;
     }
-    this.router.navigate(['/doctor/consultation.component', patientId]);
+    this.router.navigate(['/doctor/consultation', row.id], { queryParams: { appointmentId: row.appointmentId } });
   }
 }

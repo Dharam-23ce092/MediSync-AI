@@ -65,6 +65,7 @@ export const ROLE_NAVIGATION: Record<string, NavigationItem[]> = {
     }
   ],
   admin: [
+    { label: 'Appointments', link: '/admin/appointments', icon: 'appointments', tooltip: 'Approve requests and manage patient check-in' },
     {
       label: 'Command Center',
       link: '/admin/dashboard.component',
@@ -123,20 +124,10 @@ export const ROLE_NAVIGATION: Record<string, NavigationItem[]> = {
     }
   ],
   receptionist: [
-    {
-      label: 'Command Center',
-      link: '/admin/dashboard.component',
-      icon: 'dashboard',
-      tooltip: 'View live hospital metrics: occupancy, bed status, billing and OT'
-    },
-    {
-      label: 'Bed Matrix Map',
-      link: '/admin/beds.component',
-      icon: 'beds',
-      tooltip: 'Interactive room and bed allocation map (ICU, Wards, Private)'
-    }
+    { label: 'Appointments', link: '/admin/appointments', icon: 'appointments', tooltip: 'Approve requests and check in patients' }
   ],
   patient: [
+    { label: 'My Appointments', link: '/patient/appointments', icon: 'appointments', tooltip: 'Track approval, cancel a request, or view its case' },
     {
       label: 'Patient Portal',
       link: '/patient/dashboard.component',
@@ -148,12 +139,6 @@ export const ROLE_NAVIGATION: Record<string, NavigationItem[]> = {
       link: '/patient/book.component',
       icon: 'book',
       tooltip: 'Intelligently allocate a specialist based on symptoms and availability'
-    },
-    {
-      label: 'Live Wait Queue',
-      link: '/patient/queue.component',
-      icon: 'queue',
-      tooltip: 'Monitor token positions and live estimated consulting times'
     },
     {
       label: 'My Records',

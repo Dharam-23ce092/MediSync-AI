@@ -7,6 +7,11 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const connectionString = process.env.DATABASE_URL || 'postgresql://medisync:medisync_secret@localhost:5432/medisync_db';
 
 const setup = async () => {
+  if (process.env.RESET_DATABASE !== 'true') {
+    console.error('Setup resets all data. Use npm run migrate for an existing database. Set RESET_DATABASE=true only for an intentional reset.');
+    process.exitCode = 1;
+    return;
+  }
   console.log('Starting MediSync AI Database Setup...');
 
   // 1. Try to connect to postgres root to ensure database exists
@@ -315,6 +320,7 @@ const setup = async () => {
     client.release();
   } catch (err: any) {
     console.error('Error establishing PostgreSQL schema:', err);
+    process.exitCode = 1;
   } finally {
     await pool.end();
   }

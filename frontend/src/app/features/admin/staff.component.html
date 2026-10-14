@@ -35,10 +35,10 @@
         <div class="controls-bar">
           <div class="search-wrap">
             <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input 
-              type="text" 
-              placeholder="Search by Name, Email, or EMP ID..." 
-              [(ngModel)]="searchQuery" 
+            <input
+              type="text"
+              placeholder="Search by Name, Email, or EMP ID..."
+              [(ngModel)]="searchQuery"
               class="filter-input"
             />
           </div>
@@ -68,7 +68,7 @@
           <p>Use the "Add Staff Member" button above or import via CSV on the right.</p>
         </div>
 
-        <div class="table-responsive" *ngIf="!isLoading() && filteredStaff().length > 0">
+        <div class="table-responsive record-scroll" role="region" aria-label="Employee directory" tabindex="0" *ngIf="!isLoading() && filteredStaff().length > 0">
           <table class="staff-table">
             <thead>
               <tr>
@@ -108,8 +108,8 @@
                 <td class="text-right">
                   <div class="actions-wrapper">
                     <!-- Status Toggle Action -->
-                    <button 
-                      class="btn-icon btn-status" 
+                    <button
+                      class="btn-icon btn-status"
                       [class.is-active]="member.is_active"
                       (click)="toggleStaffStatus(member)"
                       [title]="member.is_active ? 'Active Account — Click to Deactivate' : 'Suspended Account — Click to Activate'"
@@ -119,18 +119,18 @@
                     </button>
 
                     <!-- Edit Action -->
-                    <button 
-                      class="btn-icon btn-edit" 
-                      (click)="openEditModal(member)" 
+                    <button
+                      class="btn-icon btn-edit"
+                      (click)="openEditModal(member)"
                       title="Edit Staff Details"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
 
                     <!-- Delete Action -->
-                    <button 
-                      class="btn-icon btn-delete" 
-                      (click)="confirmDelete(member)" 
+                    <button
+                      class="btn-icon btn-delete"
+                      (click)="confirmDelete(member)"
                       title="Delete Staff Member"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -153,7 +153,7 @@
         </div>
 
         <div class="card-body">
-          <div 
+          <div
             class="drag-drop-zone"
             [class.drag-over]="dragOver()"
             (dragover)="onDragOver($event)"
@@ -166,15 +166,15 @@
               </div>
               <p>Drag and drop staff CSV / Excel file here or</p>
               <label for="csvFileInput" class="btn-browse">Browse Files</label>
-              <input 
-                type="file" 
-                id="csvFileInput" 
-                (change)="onFileSelected($event)" 
-                accept=".csv" 
+              <input
+                type="file"
+                id="csvFileInput"
+                (change)="onFileSelected($event)"
+                accept=".csv"
                 style="display: none;"
               >
             </div>
-            
+
             <div class="file-details" *ngIf="selectedFile">
               <div class="file-icon-svg text-teal">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -194,8 +194,8 @@
             </a>
           </div>
 
-          <button 
-            class="btn btn-primary btn-block" 
+          <button
+            class="btn btn-primary btn-block"
             [disabled]="!selectedFile || isUploading()"
             (click)="uploadCSV()"
           >
@@ -218,25 +218,25 @@
         <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">Full Name <span class="required">*</span></label>
-            <input 
-              type="text" 
-              [(ngModel)]="staffForm.name" 
-              name="name" 
-              required 
-              placeholder="e.g. Dr. Aakash Verma" 
+            <input
+              type="text"
+              [(ngModel)]="staffForm.name"
+              name="name"
+              required
+              placeholder="e.g. Dr. Aakash Verma"
               class="form-input"
             />
           </div>
 
           <div class="form-group">
             <label class="form-label">Work Email <span class="required">*</span></label>
-            <input 
-              type="email" 
-              [(ngModel)]="staffForm.email" 
-              name="email" 
-              required 
+            <input
+              type="email"
+              [(ngModel)]="staffForm.email"
+              name="email"
+              required
               [disabled]="isEditMode()"
-              placeholder="e.g. aakash@hospital.org" 
+              placeholder="e.g. aakash@hospital.org"
               class="form-input"
             />
           </div>
@@ -269,34 +269,34 @@
         <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">Specialty / Sub-unit</label>
-            <input 
-              type="text" 
-              [(ngModel)]="staffForm.specialty" 
-              name="specialty" 
-              placeholder="e.g. Pediatric Cardiology, ICU Ward" 
+            <input
+              type="text"
+              [(ngModel)]="staffForm.specialty"
+              name="specialty"
+              placeholder="e.g. Pediatric Cardiology, ICU Ward"
               class="form-input"
             />
           </div>
 
           <div class="form-group">
             <label class="form-label">Employee ID</label>
-            <input 
-              type="text" 
-              [(ngModel)]="staffForm.employee_id" 
-              name="employee_id" 
-              placeholder="e.g. EMP-204" 
+            <input
+              type="text"
+              [(ngModel)]="staffForm.employee_id"
+              name="employee_id"
+              placeholder="e.g. EMP-204"
               class="form-input"
             />
           </div>
         </div>
 
         <div class="form-group" *ngIf="!isEditMode()">
-          <label class="form-label">Initial Access Password (Optional)</label>
-          <input 
-            type="password" 
-            [(ngModel)]="staffForm.password" 
-            name="password" 
-            placeholder="Default: role_medisync (e.g. doctor_medisync)" 
+          <label class="form-label">Initial Access Password</label>
+          <input
+            type="password"
+            [(ngModel)]="staffForm.password"
+            name="password"
+            placeholder="At least 10 characters" required minlength="10"
             class="form-input"
           />
         </div>

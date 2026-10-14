@@ -1,0 +1,17 @@
+{
+  "datasetId": "9d827eca-620e-4fb8-9bb4-70fd1efc225d",
+  "synthetic": true,
+  "timezone": "Asia/Kolkata",
+  "seedDate": "2026-10-14",
+  "hospitalId": "ZYD-AHD",
+  "users": 29,
+  "patients": 16,
+  "cases": 56,
+  "appointments": 51,
+  "prescriptions": 21,
+  "invoices": 53,
+  "labOrders": 21,
+  "inventoryBatches": 12,
+  "beds": 16,
+  "nurseTasks": 12
+}

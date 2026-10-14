@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -120,40 +121,40 @@ export interface Invoice {
       <div class="controls-row">
         <div class="search-input-wrapper">
           <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input 
-            type="text" 
-            placeholder="Search by Patient Name, UHID, or Invoice #..." 
-            [(ngModel)]="searchQuery" 
+          <input
+            type="text"
+            placeholder="Search by Patient Name, UHID, or Invoice #..."
+            [(ngModel)]="searchQuery"
             class="search-input"
           />
         </div>
 
         <div class="status-filters">
-          <button 
-            class="filter-pill" 
-            [class.active]="selectedStatus === 'ALL'" 
-            (click)="selectedStatus = 'ALL'"
+          <button
+            class="filter-pill"
+            [class.active]="selectedStatus() === 'ALL'"
+            (click)="selectedStatus.set('ALL')"
           >
             All ({{ invoices().length }})
           </button>
-          <button 
-            class="filter-pill pill-paid" 
-            [class.active]="selectedStatus === 'PAID'" 
-            (click)="selectedStatus = 'PAID'"
+          <button
+            class="filter-pill pill-paid"
+            [class.active]="selectedStatus() === 'PAID'"
+            (click)="selectedStatus.set('PAID')"
           >
             Paid ({{ paidInvoicesCount() }})
           </button>
-          <button 
-            class="filter-pill pill-pending" 
-            [class.active]="selectedStatus === 'PENDING'" 
-            (click)="selectedStatus = 'PENDING'"
+          <button
+            class="filter-pill pill-pending"
+            [class.active]="selectedStatus() === 'PENDING'"
+            (click)="selectedStatus.set('PENDING')"
           >
             Pending ({{ pendingInvoicesCount() }})
           </button>
-          <button 
-            class="filter-pill pill-partial" 
-            [class.active]="selectedStatus === 'PARTIAL'" 
-            (click)="selectedStatus = 'PARTIAL'"
+          <button
+            class="filter-pill pill-partial"
+            [class.active]="selectedStatus() === 'PARTIAL'"
+            (click)="selectedStatus.set('PARTIAL')"
           >
             Partial ({{ partialInvoicesCount() }})
           </button>
@@ -357,13 +358,13 @@ export interface Invoice {
 
             <div class="form-group">
               <label class="form-label">Payment Amount (₹) <span class="required">*</span></label>
-              <input 
-                type="number" 
-                [(ngModel)]="paymentForm.amount" 
-                name="amount" 
-                required 
-                min="1" 
-                [max]="Number(paymentTarget()?.balance || 0)" 
+              <input
+                type="number"
+                [(ngModel)]="paymentForm.amount"
+                name="amount"
+                required
+                min="1"
+                [max]="Number(paymentTarget()?.balance || 0)"
                 class="form-input font-bold"
               />
             </div>
@@ -381,11 +382,11 @@ export interface Invoice {
 
             <div class="form-group">
               <label class="form-label">Transaction Reference #</label>
-              <input 
-                type="text" 
-                [(ngModel)]="paymentForm.transactionReference" 
-                name="transactionReference" 
-                placeholder="e.g. UPI-9283749823 / POS-REC-104" 
+              <input
+                type="text"
+                [(ngModel)]="paymentForm.transactionReference"
+                name="transactionReference"
+                placeholder="e.g. UPI-9283749823 / POS-REC-104"
                 class="form-input"
               />
             </div>
@@ -991,8 +992,8 @@ export class AdminBilling implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
-  searchQuery = '';
-  selectedStatus: 'ALL' | 'PAID' | 'PENDING' | 'PARTIAL' = 'ALL';
+  searchQuery = signal('');
+  selectedStatus = signal<'ALL' | 'PAID' | 'PENDING' | 'PARTIAL'>('ALL');
 
   // Modals State
   readonly selectedInvoice = signal<Invoice | null>(null);
@@ -1041,10 +1042,10 @@ export class AdminBilling implements OnInit {
 
   readonly filteredInvoices = computed(() => {
     let list = this.invoices();
-    if (this.selectedStatus !== 'ALL') {
-      list = list.filter(inv => inv.status === this.selectedStatus);
+    if (this.selectedStatus() !== 'ALL') {
+      list = list.filter(inv => inv.status === this.selectedStatus());
     }
-    const query = this.searchQuery.toLowerCase().trim();
+    const query = this.searchQuery().toLowerCase().trim();
     if (!query) return list;
     return list.filter(inv =>
       inv.name.toLowerCase().includes(query) ||
@@ -1135,7 +1136,8 @@ export class AdminBilling implements OnInit {
     }
   }
 
+  private router = inject(Router);
   openCreateInvoiceModal(): void {
-    this.successMessage.set('Direct invoice generation ready. Invoices auto-generate upon discharge, lab orders, and pharmacy dispensations.');
+    this.router.navigate(['/admin/billing/new']);
   }
 }

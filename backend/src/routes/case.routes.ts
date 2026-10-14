@@ -102,12 +102,21 @@ router.get('/:id', authenticateJWT, requireTenant, async (req: TenantRequest, re
       ORDER BY created_at ASC
     `;
     const timelineResult = await pool.query(timelineQuery, [id]);
+    const [appointments, prescriptions, labs, invoices, beds, notes] = await Promise.all([
+      pool.query('SELECT id,token,status,appointment_time as "appointmentTime" FROM appointments WHERE case_id=$1 AND hospital_id=$2 ORDER BY appointment_time',[id,hospitalId]),
+      pool.query('SELECT id,drug_details as "drugDetails",status,date FROM prescriptions WHERE case_id=$1 AND hospital_id=$2',[id,hospitalId]),
+      pool.query('SELECT id,test_name as "testName",specimen,status,results FROM lab_orders WHERE case_id=$1 AND hospital_id=$2',[id,hospitalId]),
+      pool.query('SELECT id,invoice_number as "invoiceNumber",total,paid,balance,status FROM billing WHERE case_id=$1 AND hospital_id=$2',[id,hospitalId]),
+      pool.query('SELECT id,name,type,status FROM beds WHERE case_id=$1 AND hospital_id=$2',[id,hospitalId]),
+      pool.query('SELECT id,chief_complaint as "chiefComplaint",diagnosis,clinical_notes as "clinicalNotes",created_at as "createdAt" FROM consultation_notes WHERE case_id=$1 AND hospital_id=$2',[id,hospitalId])
+    ]);
 
     return res.json({
       success: true,
       data: {
         ...caseData,
-        timeline: timelineResult.rows
+        timeline: timelineResult.rows,
+        appointments: appointments.rows, prescriptions: prescriptions.rows, labs: labs.rows, invoices: invoices.rows, beds: beds.rows, notes: notes.rows
       }
     });
 

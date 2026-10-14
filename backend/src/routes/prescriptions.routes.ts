@@ -1,187 +1,230 @@
-import { Router, Response } from 'express';
-import { pool } from '../config/postgres';
-import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth.middleware';
-import { authorizeRoles } from '../middleware/role.middleware';
-import { logAudit } from '../utils/audit';
-
+import { Router } from "express";
+import { pool } from "../config/postgres";
+import { authenticateJWT } from "../middleware/auth.middleware";
+import { requireTenant, TenantRequest } from "../middleware/tenant.middleware";
+import { authorizeRoles } from "../middleware/role.middleware";
+import { newId, requireValue, transaction } from "../utils/workflow";
 const router = Router();
-
-// Get all prescriptions
-router.get('/', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse', 'pharmacist', 'patient']), async (req: AuthenticatedRequest, res: Response) => {
-  const { uhid } = req.query;
-  try {
-    let targetUhid = uhid;
-    if (req.user?.role === 'patient') {
-      targetUhid = req.user.uhid;
-    }
-    let query = `
-      SELECT rx.id, rx.patient_id as "patientId", p.name,
-             p.uhid as patient_uhid, u.name as doctor,
-             rx.drug_details as "drugDetails", rx.status,
-             to_char(rx.date, 'YYYY-MM-DD') as date
-      FROM prescriptions rx
-      JOIN patients p ON p.id = rx.patient_id
-      JOIN users u ON u.id = rx.doctor_id
-    `;
-    const values: any[] = [];
-    if (targetUhid) {
-      query += ' WHERE p.uhid = $1';
-      values.push(targetUhid);
-    }
-    query += ' ORDER BY rx.created_at DESC';
-
-    const result = await pool.query(query, values);
-
-    const formatted = result.rows.map(r => ({
-      ...r,
-      name_subtitle: r.patient_uhid
-    }));
-
-    return res.json({
-      success: true,
-      data: formatted
-    });
-  } catch (error: any) {
-    console.error('Error fetching prescriptions:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-// Create prescription
-router.post('/', authenticateJWT, authorizeRoles(['admin', 'doctor']), async (req: AuthenticatedRequest, res: Response) => {
-  const { patientId, name_subtitle, doctor, drugDetails } = req.body;
-
-  if (!patientId || !drugDetails) {
-    return res.status(400).json({ success: false, message: 'Missing fields', errorCode: 'VALIDATION_ERROR' });
-  }
-
-  try {
-    const patRes = await pool.query('SELECT id, name, uhid FROM patients WHERE id = $1 OR uhid = $1 OR uhid = $2', [patientId, name_subtitle]);
-    if (patRes.rowCount === 0) {
-      return res.status(404).json({ success: false, message: 'Patient not found', errorCode: 'PATIENT_NOT_FOUND' });
-    }
-    const targetPatient = patRes.rows[0];
-
-    let doctorId = req.user?.userId;
-    let doctorName = req.user?.name;
-
-    if (doctor) {
-      const docRes = await pool.query('SELECT id, name FROM users WHERE name = $1 AND role = $2', [doctor, 'doctor']);
-      if (docRes.rows && docRes.rows.length > 0) {
-        doctorId = docRes.rows[0].id;
-        doctorName = docRes.rows[0].name;
+router.use(authenticateJWT, requireTenant);
+router.get(
+  "/",
+  authorizeRoles(["admin", "doctor", "nurse", "pharmacist", "patient"]),
+  async (req: TenantRequest, res, next) => {
+    try {
+      const args: any[] = [req.hospitalId];
+      let filter = "rx.hospital_id=$1";
+      if (req.user!.role === "patient") {
+        args.push(req.user!.userId);
+        filter += " AND p.user_id=$2";
+      } else if (req.query.uhid) {
+        args.push(req.query.uhid);
+        filter += " AND p.uhid=$2";
       }
-    }
-
-    if (!doctorId) {
-      return res.status(400).json({ success: false, message: 'Doctor session not verified', errorCode: 'VALIDATION_ERROR' });
-    }
-
-    const rxId = `O${Date.now()}`;
-    const date = new Date().toISOString().split('T')[0];
-    const hospitalId = req.user?.hospital_id;
-
-    // Resolve active case ID for patient
-    const caseRes = await pool.query(
-      "SELECT id FROM cases WHERE patient_id = $1 AND status != 'closed' ORDER BY created_at DESC LIMIT 1",
-      [targetPatient.id]
-    );
-    const caseId = caseRes.rows.length > 0 ? caseRes.rows[0].id : null;
-
-    await pool.query(
-      `INSERT INTO prescriptions (id, hospital_id, case_id, patient_id, doctor_id, drug_details, status, date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [rxId, hospitalId, caseId, targetPatient.id, doctorId, drugDetails, 'Pending', date]
-    );
-
-    // Charge creation
-    const invoiceNum = `INV-RX-${Date.now()}`;
-    const billingId = `B_${Date.now()}`;
-    await pool.query(
-      `INSERT INTO billing (id, hospital_id, case_id, patient_id, invoice_number, subtotal, discount, tax, total, paid, balance, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-      [billingId, hospitalId, caseId, targetPatient.id, invoiceNum, 350.00, 0.00, 63.00, 413.00, 0.00, 413.00, 'PENDING']
-    );
-
-    await pool.query(
-      `INSERT INTO invoice_items (id, billing_id, description, quantity, unit_price, total_price)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [`BI_${billingId}_1`, billingId, `Pharmacy charges for Rx ${rxId}`, 1, 350.00, 350.00]
-    );
-
-    // Update Case status and timeline
-    if (caseId) {
-      await pool.query(
-        "UPDATE cases SET status = 'prescription_issued', updated_at = NOW() WHERE id = $1",
-        [caseId]
+      const rows = await pool.query(
+        `SELECT rx.id,rx.case_id as "caseId",rx.patient_id as "patientId",p.name,p.uhid as name_subtitle,u.name as doctor,rx.drug_details as "drugDetails",rx.status,to_char(rx.date,'YYYY-MM-DD') as date FROM prescriptions rx JOIN patients p ON p.id=rx.patient_id JOIN users u ON u.id=rx.doctor_id WHERE ${filter} ORDER BY rx.created_at DESC`,
+        args,
       );
-      await pool.query(
-        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
-        [`CT_${Date.now()}`, caseId, 'prescription_created', req.user?.userId, req.user?.role, `Prescription issued by Dr. ${doctorName || 'Staff'}: ${drugDetails}`]
-      );
+      res.json({ success: true, data: rows.rows });
+    } catch (error) {
+      next(error);
     }
-
-    await logAudit(req, `PRESCRIPTION_CREATED: Rx ${rxId} for Patient ${targetPatient.uhid}`, 'pharmacy', 'info');
-
-    return res.status(201).json({
-      success: true,
-      message: 'Prescription created successfully',
-      data: {
-        id: rxId,
-        patientId: targetPatient.id,
-        name: targetPatient.name,
-        name_subtitle: targetPatient.uhid,
-        doctor: doctorName,
-        drugDetails,
-        status: 'Pending',
-        date
-      }
-    });
-  } catch (error: any) {
-    console.error('Error creating prescription:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
-// Dispense prescription
-router.patch('/:id/dispense', authenticateJWT, authorizeRoles(['admin', 'pharmacist']), async (req: AuthenticatedRequest, res: Response) => {
-  const { id } = req.params;
-
-  try {
-    const updateResult = await pool.query(
-      `UPDATE prescriptions
-       SET status = 'Dispensed'
-       WHERE id = $1
-       RETURNING *`,
-      [id]
-    );
-
-    if (updateResult.rowCount === 0) {
-      return res.status(404).json({ success: false, message: 'Prescription not found', errorCode: 'PRESCRIPTION_NOT_FOUND' });
-    }
-
-    const rx = updateResult.rows[0];
-    if (rx && rx.case_id) {
-      await pool.query(
-        "UPDATE cases SET status = 'pharmacy_dispensed', updated_at = NOW() WHERE id = $1",
-        [rx.case_id]
+  },
+);
+router.post(
+  "/",
+  authorizeRoles(["admin", "doctor"]),
+  async (req: TenantRequest, res, next) => {
+    try {
+      const { caseId, drugDetails } = req.body;
+      requireValue(
+        caseId && typeof drugDetails === "string" && drugDetails.trim(),
+        "A case and prescription details are required.",
       );
-      await pool.query(
-        "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
-        [`CT_${Date.now()}`, rx.case_id, 'drug_dispensed', req.user?.userId, req.user?.role, `Medications successfully dispensed by pharmacy`]
-      );
+      const data = await transaction(async (client) => {
+        const c = (
+          await client.query(
+            "SELECT * FROM cases WHERE id=$1 AND hospital_id=$2 FOR UPDATE",
+            [caseId, req.hospitalId],
+          )
+        ).rows[0];
+        requireValue(c, "Case not found.", 404);
+        requireValue(
+          req.user!.role === "admin" || c.assigned_doctor === req.user!.userId,
+          "Access denied.",
+          403,
+        );
+        requireValue(
+          !["cancelled", "closed", "discharged", "requested"].includes(
+            c.status,
+          ),
+          "Case is not open for prescribing.",
+          409,
+        );
+        const id = newId("RX");
+        await client.query(
+          `INSERT INTO prescriptions (id,hospital_id,case_id,patient_id,doctor_id,drug_details,status,date) VALUES($1,$2,$3,$4,$5,$6,'Pending',CURRENT_DATE)`,
+          [
+            id,
+            req.hospitalId,
+            c.id,
+            c.patient_id,
+            c.assigned_doctor,
+            drugDetails,
+          ],
+        );
+        await client.query(
+          "INSERT INTO case_timeline(id,case_id,event_type,actor_id,actor_role,summary) VALUES($1,$2,$3,$4,$5,$6)",
+          [
+            newId("CT"),
+            c.id,
+            "prescription_created",
+            req.user!.userId,
+            req.user!.role,
+            "Prescription issued for pharmacy review.",
+          ],
+        );
+        return { id };
+      });
+      res.status(201).json({ success: true, data });
+    } catch (error) {
+      next(error);
     }
-
-    await logAudit(req, `PRESCRIPTION_DISPENSED: Rx ${id} marked complete`, 'pharmacy', 'info');
-
-    return res.json({
-      success: true,
-      message: 'Prescription marked as dispensed successfully'
-    });
-  } catch (error: any) {
-    console.error('Error dispensing prescription:', error);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
-  }
-});
-
+  },
+);
+router.patch(
+  "/:id/dispense",
+  authorizeRoles(["admin", "pharmacist"]),
+  async (req: TenantRequest, res, next) => {
+    try {
+      const items = req.body.items;
+      requireValue(
+        Array.isArray(items) && items.length > 0,
+        "Select inventory batches and quantities before dispensing.",
+      );
+      requireValue(
+        items.every(
+          (i: any) =>
+            typeof i.inventoryId === "string" &&
+            Number.isInteger(i.quantity) &&
+            i.quantity > 0,
+        ),
+        "Each item needs a valid batch and quantity.",
+      );
+      requireValue(
+        new Set(items.map((i: any) => i.inventoryId)).size === items.length,
+        "Select each batch only once.",
+      );
+      const data = await transaction(async (client) => {
+        const rx = (
+          await client.query(
+            "SELECT * FROM prescriptions WHERE id=$1 AND hospital_id=$2 FOR UPDATE",
+            [req.params.id, req.hospitalId],
+          )
+        ).rows[0];
+        requireValue(rx, "Prescription not found.", 404);
+        requireValue(
+          rx.status === "Pending",
+          "This prescription is already dispensed.",
+          409,
+        );
+        const lines = [];
+        let subtotal = 0;
+        for (const item of [...items].sort((a, b) =>
+          a.inventoryId.localeCompare(b.inventoryId),
+        )) {
+          const stock = (
+            await client.query(
+              "SELECT * FROM inventory WHERE id=$1 AND hospital_id=$2 FOR UPDATE",
+              [item.inventoryId, req.hospitalId],
+            )
+          ).rows[0];
+          requireValue(stock, "Inventory batch not found.", 404);
+          requireValue(
+            Number(stock.qty) >= item.quantity,
+            `Insufficient stock for ${stock.name}.`,
+            409,
+          );
+          requireValue(
+            new Date(stock.expiry).getTime() >=
+              new Date(new Date().toDateString()).getTime(),
+            `Batch ${stock.batch} has expired.`,
+            409,
+          );
+          const price = Number(stock.unit_price);
+          requireValue(
+            Number.isFinite(price) && price >= 0,
+            "Inventory price is invalid.",
+          );
+          const total = Math.round(price * item.quantity * 100) / 100;
+          subtotal += total;
+          await client.query(
+            "UPDATE inventory SET qty=qty-$1,status=CASE WHEN qty-$1=0 THEN 'Out of Stock' WHEN qty-$1<=reorder_level THEN 'Low Stock' ELSE 'In Stock' END WHERE id=$2",
+            [item.quantity, stock.id],
+          );
+          await client.query(
+            "INSERT INTO dispense_items(id,prescription_id,inventory_id,quantity,unit_price) VALUES($1,$2,$3,$4,$5)",
+            [newId("DI"), rx.id, stock.id, item.quantity, price],
+          );
+          lines.push({
+            description: `${stock.name} · Batch ${stock.batch}`,
+            quantity: item.quantity,
+            price,
+            total,
+          });
+        }
+        subtotal = Math.round(subtotal * 100) / 100;
+        const billingId = newId("B"),
+          invoiceNumber = `INV-${billingId.slice(2, 10).toUpperCase()}`;
+        await client.query(
+          `INSERT INTO billing(id,hospital_id,case_id,patient_id,invoice_number,subtotal,total,paid,balance,status) VALUES($1,$2,$3,$4,$5,$6,$6,0,$6,$7)`,
+          [
+            billingId,
+            req.hospitalId,
+            rx.case_id,
+            rx.patient_id,
+            invoiceNumber,
+            subtotal,
+            subtotal === 0 ? "PAID" : "PENDING",
+          ],
+        );
+        for (const line of lines)
+          await client.query(
+            "INSERT INTO invoice_items(id,billing_id,description,quantity,unit_price,total_price) VALUES($1,$2,$3,$4,$5,$6)",
+            [
+              newId("BI"),
+              billingId,
+              line.description,
+              line.quantity,
+              line.price,
+              line.total,
+            ],
+          );
+        await client.query(
+          "UPDATE prescriptions SET status='Dispensed',dispensed_at=NOW() WHERE id=$1",
+          [rx.id],
+        );
+        if (rx.case_id)
+          await client.query(
+            "INSERT INTO case_timeline(id,case_id,event_type,actor_id,actor_role,summary) VALUES($1,$2,$3,$4,$5,$6)",
+            [
+              newId("CT"),
+              rx.case_id,
+              "drug_dispensed",
+              req.user!.userId,
+              req.user!.role,
+              `Prescription dispensed. Stock updated and itemized invoice ${invoiceNumber} created.`,
+            ],
+          );
+        return { invoiceNumber, billingId, total: subtotal };
+      });
+      res.json({
+        success: true,
+        message: "Prescription dispensed and invoice created.",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 export default router;

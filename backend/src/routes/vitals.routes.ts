@@ -14,20 +14,20 @@ router.get('/', authenticateJWT, authorizeRoles(['admin', 'doctor', 'nurse']), a
       SELECT b.name as bed, p.name, p.uhid, b.status as bed_status
       FROM beds b
       JOIN patients p ON p.id = b.patient_id
-      WHERE b.status = 'occupied'
-    `);
+      WHERE b.status = 'occupied' AND b.hospital_id=$1
+    `, [req.user?.hospital_id]);
 
     const activeVitals = [];
 
     for (const row of bedsRes.rows) {
-      const latestMongo = await VitalHistory.findOne({ uhid: row.uhid }).sort({ recordedAt: -1 });
+      const latestMongo = await VitalHistory.findOne({ uhid: row.uhid, hospital_id: req.user?.hospital_id }).sort({ recordedAt: -1 });
 
-      let status: 'normal' | 'warning' | 'critical' = 'normal';
-      let hr = 72;
-      let bp = '120/80';
-      let temp = 98.6;
-      let spo2 = 98;
-      let notes = 'No notes';
+      let status: string = 'unknown';
+      let hr: number | null = null;
+      let bp: string | null = null;
+      let temp: number | null = null;
+      let spo2: number | null = null;
+      let notes = 'No vitals recorded yet.';
 
       if (latestMongo) {
         status = latestMongo.status;
@@ -73,7 +73,9 @@ router.get('/latest/:uhid', authenticateJWT, authorizeRoles(['admin', 'doctor', 
     });
   }
   try {
-    const latest = await VitalHistory.findOne({ uhid }).sort({ recordedAt: -1 });
+    const patient = await pool.query('SELECT id FROM patients WHERE uhid=$1 AND hospital_id=$2', [uhid,req.user?.hospital_id]);
+    if (!patient.rowCount) return res.status(404).json({success:false,message:'Patient not found.'});
+    const latest = await VitalHistory.findOne({ uhid, hospital_id: req.user?.hospital_id }).sort({ recordedAt: -1 });
     if (!latest) {
       return res.json({
         success: true,
@@ -83,7 +85,7 @@ router.get('/latest/:uhid', authenticateJWT, authorizeRoles(['admin', 'doctor', 
           bp: null,
           temp: null,
           spo2: null,
-          status: 'normal',
+          status: 'unknown',
           notes: 'No vitals recorded yet.'
         }
       });
@@ -107,6 +109,9 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'nurse']), async (req
   }
 
   try {
+    const patient = await pool.query('SELECT id FROM patients WHERE uhid=$1 AND hospital_id=$2', [uhid,req.user?.hospital_id]);
+    if (!patient.rowCount) return res.status(404).json({success:false,message:'Patient not found.'});
+    if (![hr,temp,spo2].every(v=>typeof v === 'number' && Number.isFinite(v) && v>0) || spo2>100 || !/^\d{2,3}\/\d{2,3}$/.test(bp)) return res.status(400).json({success:false,message:'Enter valid measured vitals.'});
     let status: 'normal' | 'warning' | 'critical' = 'normal';
     if (spo2 < 90 || hr > 110) {
       status = 'critical';
@@ -116,7 +121,11 @@ router.post('/', authenticateJWT, authorizeRoles(['admin', 'nurse']), async (req
 
     const nurseName = req.user?.name || 'Unknown Nurse';
 
+    const admission = await pool.query("SELECT case_id FROM beds WHERE patient_id=$1 AND hospital_id=$2 AND status='occupied'", [patient.rows[0].id, req.user?.hospital_id]);
     const newVital = await VitalHistory.create({
+      hospital_id: req.user?.hospital_id,
+      patient_id: patient.rows[0].id,
+      case_id: admission.rows[0]?.case_id,
       uhid,
       hr,
       bp,

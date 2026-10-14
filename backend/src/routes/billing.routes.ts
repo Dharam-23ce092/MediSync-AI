@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { pool } from '../config/postgres';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth.middleware';
 import { authorizeRoles } from '../middleware/role.middleware';
+import {newId,requireValue,transaction} from '../utils/workflow';
 import { logAudit } from '../utils/audit';
 
 const router = Router();
@@ -20,10 +21,11 @@ router.get('/', authenticateJWT, authorizeRoles(['admin', 'patient']), async (re
              to_char(b.created_at, 'YYYY-MM-DD') as date
       FROM billing b
       JOIN patients p ON p.id = b.patient_id
+      WHERE b.hospital_id=$1
     `;
-    const values: any[] = [];
+    const values: any[] = [req.user?.hospital_id];
     if (targetUhid) {
-      query += ' WHERE p.uhid = $1';
+      query += ' AND p.uhid = $2';
       values.push(targetUhid);
     }
     query += ' ORDER BY b.created_at DESC';
@@ -39,6 +41,24 @@ router.get('/', authenticateJWT, authorizeRoles(['admin', 'patient']), async (re
   }
 });
 
+// Create explicit itemized charges for a known hospital case.
+router.post('/',authenticateJWT,authorizeRoles(['admin']),async(req:AuthenticatedRequest,res,next)=>{
+ try{
+  const {caseId,items}=req.body;
+  requireValue(caseId && Array.isArray(items) && items.length>0,'Select a case and add at least one charge.');
+  requireValue(items.every((i:any)=>typeof i.description==='string'&&i.description.trim()&&Number.isInteger(i.quantity)&&i.quantity>0&&typeof i.unitPrice==='number'&&Number.isFinite(i.unitPrice)&&i.unitPrice>=0&&Math.abs(i.unitPrice*100-Math.round(i.unitPrice*100))<0.000001),'Enter valid item descriptions, quantities and prices.');
+  const data=await transaction(async client=>{
+   const c=(await client.query('SELECT * FROM cases WHERE id=$1 AND hospital_id=$2 FOR UPDATE',[caseId,req.user?.hospital_id])).rows[0];requireValue(c,'Case not found.',404);
+   const total=items.reduce((sum:number,i:any)=>sum+Math.round(i.quantity*i.unitPrice*100),0)/100;
+   requireValue(total<=99999999.99,'Invoice total exceeds the supported limit.');
+   const id=newId('B'),invoiceNumber=`INV-${id.slice(2,10).toUpperCase()}`;
+   await client.query('INSERT INTO billing(id,hospital_id,case_id,patient_id,invoice_number,subtotal,total,balance,status) VALUES($1,$2,$3,$4,$5,$6,$6,$6,$7)',[id,req.user?.hospital_id,c.id,c.patient_id,invoiceNumber,total,total===0?'PAID':'PENDING']);
+   for(const i of items)await client.query('INSERT INTO invoice_items(id,billing_id,description,quantity,unit_price,total_price) VALUES($1,$2,$3,$4,$5,$6)',[newId('BI'),id,i.description.trim(),i.quantity,i.unitPrice,Math.round(i.quantity*i.unitPrice*100)/100]);
+   await client.query('INSERT INTO case_timeline(id,case_id,event_type,actor_id,actor_role,summary) VALUES($1,$2,$3,$4,$5,$6)',[newId('CT'),c.id,'invoice_created',req.user?.userId,req.user?.role,`Itemized invoice ${invoiceNumber} created.`]);return{id,invoiceNumber,total};
+  });res.status(201).json({success:true,data});
+ }catch(error){next(error);}
+});
+
 // Get detailed invoice
 router.get('/:id', authenticateJWT, authorizeRoles(['admin', 'patient']), async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
@@ -49,8 +69,8 @@ router.get('/:id', authenticateJWT, authorizeRoles(['admin', 'patient']), async 
               to_char(b.created_at, 'YYYY-MM-DD') as date
        FROM billing b
        JOIN patients p ON p.id = b.patient_id
-       WHERE b.id = $1`,
-      [id]
+       WHERE b.id = $1 AND b.hospital_id=$2`,
+      [id,req.user?.hospital_id]
     );
 
     if (invoiceRes.rows.length === 0) {
@@ -98,11 +118,11 @@ router.get('/:id', authenticateJWT, authorizeRoles(['admin', 'patient']), async 
 });
 
 // Process payment with PostgreSQL transaction
-router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin']), async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const { amount, paymentMethod, transactionReference } = req.body;
 
-  if (amount === undefined || amount <= 0 || !paymentMethod) {
+  if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || Math.abs(Math.round(amount*100)-amount*100)>0.000001 || !paymentMethod) {
     return res.status(400).json({ success: false, message: 'Invalid payment details', errorCode: 'VALIDATION_ERROR' });
   }
 
@@ -131,8 +151,8 @@ router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), a
     await client.query('BEGIN');
 
     const billRes = await client.query(
-      'SELECT total, paid, balance, status, patient_id FROM billing WHERE id = $1 FOR UPDATE',
-      [id]
+      'SELECT total, paid, balance, status, patient_id FROM billing WHERE id = $1 AND hospital_id=$2 FOR UPDATE',
+      [id,req.user?.hospital_id]
     );
 
     if (billRes.rowCount === 0) {
@@ -141,8 +161,8 @@ router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), a
     }
 
     const bill = billRes.rows[0];
-    const newPaid = Number(bill.paid) + Number(amount);
-    const newBalance = Number(bill.total) - newPaid;
+    const newPaid = Math.round((Number(bill.paid) + Number(amount))*100)/100;
+    const newBalance = Math.round((Number(bill.total) - newPaid)*100)/100;
 
     if (newBalance < -0.01) {
       await client.query('ROLLBACK');
@@ -158,7 +178,11 @@ router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), a
       newStatus = 'PAID';
     }
 
-    const paymentId = `PAY_${Date.now()}`;
+    if (transactionReference) {
+      const duplicate=await client.query('SELECT id FROM payments WHERE billing_id=$1 AND transaction_reference=$2',[id,transactionReference]);
+      if(duplicate.rowCount){await client.query('ROLLBACK');return res.status(409).json({success:false,message:'This receipt reference has already been recorded.'});}
+    }
+    const paymentId = newId('PAY');
     await client.query(
       `INSERT INTO payments (id, billing_id, amount, payment_method, transaction_reference)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -177,13 +201,10 @@ router.post('/:id/pay', authenticateJWT, authorizeRoles(['admin', 'patient']), a
     const caseId = billInfo.rows[0]?.case_id;
     if (caseId) {
       if (newStatus === 'PAID') {
-        await client.query(
-          "UPDATE cases SET status = 'closed', discharge_date = NOW(), updated_at = NOW() WHERE id = $1",
-          [caseId]
-        );
+
         await client.query(
           "INSERT INTO case_timeline (id, case_id, event_type, actor_id, actor_role, summary) VALUES ($1, $2, $3, $4, $5, $6)",
-          [`CT_${Date.now()}`, caseId, 'payment_received', req.user?.userId, req.user?.role, `Invoice fully settled via ${paymentMethod}. Case file closed.`]
+          [`CT_${Date.now()}`, caseId, 'payment_received', req.user?.userId, req.user?.role, `Invoice fully settled via ${paymentMethod}. Clinical case status unchanged.`]
         );
       } else {
         await client.query(

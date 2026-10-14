@@ -54,19 +54,25 @@
 
 /* Table styling */
 .table-scroll-wrapper {
-  overflow-x: auto;
+  overflow: auto;
   width: 100%;
-  flex: 1;
+  height: var(--record-viewport-height);
+  min-height: 0;
+  flex: 0 0 auto;
 }
 
 .medisync-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
   background-color: var(--color-bg-surface);
 }
 
 .medisync-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background-color: var(--color-bg-surface);
   padding: 12px var(--spacing-lg);
   font-family: var(--font-display);
@@ -133,12 +139,12 @@
 
 .avatar-name {
   font-weight: 500;
-  color: #F8FAFC;
+  color: var(--color-text-primary);
 }
 
 .avatar-subtitle {
   font-size: 11px;
-  color: #94A3B8;
+  color: var(--color-text-muted);
   margin-top: 1px;
 }
 
@@ -254,6 +260,8 @@
 
 /* Table Pagination styling */
 .table-pagination-footer {
+  flex-wrap: wrap;
+  gap: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;

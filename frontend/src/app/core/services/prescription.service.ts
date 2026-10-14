@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from '../config/api.config';
@@ -80,7 +80,7 @@ export class PrescriptionService {
   constructor() {
     effect(() => {
       if (this.authService.isAuthenticated()) {
-        void this.loadPrescriptions();
+        untracked(() => { void this.loadPrescriptions(); });
       } else {
         this.prescriptionsSignal.set([]);
         this.errorSignal.set(null);

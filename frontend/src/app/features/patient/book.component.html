@@ -1,0 +1,180 @@
+<div class="booking-page">
+  <a class="back-link" routerLink="/patient/appointments">← My appointments</a>
+  <header>
+    <p class="eyebrow">PLAN YOUR VISIT</p>
+    <h1>Book an appointment</h1>
+    <p>Choose your provider and a preferred time. The hospital will review your request.</p>
+  </header>
+  <section class="success-panel" *ngIf="created() as a; else bookingForm" role="status">
+    <div class="success-icon">✓</div>
+    <p class="eyebrow">REQUEST SUBMITTED</p>
+    <h2>You're on the list for review</h2>
+    <p>
+      Your appointment is <strong>awaiting approval</strong>. You can follow its status in My
+      appointments.
+    </p>
+    <dl>
+      <div>
+        <dt>Provider</dt>
+        <dd>{{ a.doctorName }}</dd>
+      </div>
+      <div>
+        <dt>Requested time</dt>
+        <dd>
+          {{ a.appointmentTime | date: 'fullDate' }} · {{ a.appointmentTime | date: 'shortTime' }}
+        </dd>
+      </div>
+      <div>
+        <dt>Case reference</dt>
+        <dd>{{ a.caseNumber }}</dd>
+      </div>
+    </dl>
+    <a class="primary-button" routerLink="/patient/appointments">Track my appointment →</a>
+  </section>
+  <ng-template #bookingForm
+    ><div class="booking-grid">
+      <div class="booking-steps">
+        <section class="booking-panel">
+          <div class="section-heading">
+            <span class="step">1</span>
+            <div>
+              <h2>Choose a provider</h2>
+              <p>Find the right department and consultant.</p>
+            </div>
+          </div>
+          <label class="field"
+            >Department<select [(ngModel)]="specialty" (ngModelChange)="changeSpecialty()">
+              <option value="">All departments</option>
+              <option *ngFor="let spec of doctors.specialties()" [value]="spec">{{ spec }}</option>
+            </select></label
+          >
+          <p *ngIf="doctors.loading()" class="muted">Loading providers…</p>
+          <p *ngIf="doctors.error()" class="error" role="alert">
+            {{ doctors.error() }} <button (click)="doctors.loadDoctors()">Retry</button>
+          </p>
+          <div class="provider-list">
+            <button
+              class="provider-card"
+              *ngFor="let d of filtered()"
+              [class.selected]="doctor()?.id === d.id"
+              [disabled]="d.availability_status && d.availability_status !== 'Available'"
+              (click)="selectDoctor(d)"
+            >
+              <span class="avatar">{{ d.name.charAt(0) }}</span
+              ><span class="provider-info"
+                ><strong>{{ d.name }}</strong
+                ><small
+                  >{{ d.specialty || 'General consultation' }} ·
+                  {{ d.department_name || 'Outpatient care' }}</small
+                ><small>Provider ID: {{ d.id }}</small></span
+              ><span class="selection-dot">{{ doctor()?.id === d.id ? '✓' : '' }}</span>
+            </button>
+          </div>
+          <p *ngIf="!doctors.loading() && !filtered().length" class="muted">
+            No providers listed for this department.
+          </p>
+        </section>
+        <section class="booking-panel">
+          <div class="section-heading">
+            <span class="step">2</span>
+            <div>
+              <h2>Select a date & time</h2>
+              <p>Times are shown in your local time zone.</p>
+            </div>
+          </div>
+          <label class="field"
+            >Appointment date<input
+              type="date"
+              [(ngModel)]="date"
+              [min]="minimumDate"
+              (ngModelChange)="loadSlots()"
+          /></label>
+          <p class="muted" *ngIf="!doctor()">Choose a provider to see available times.</p>
+          <p class="muted" *ngIf="loadingSlots()">Checking available times…</p>
+          <div class="time-slots">
+            <button
+              *ngFor="let s of slots()"
+              [disabled]="!s.available"
+              [class.selected]="slot() === s.time"
+              (click)="slot.set(s.time)"
+            >
+              {{ s.time | date: 'shortTime' }}<small *ngIf="!s.available">Reserved</small>
+            </button>
+          </div>
+          <div class="empty-slots" *ngIf="doctor() && !loadingSlots() && !availableCount()">
+            No open times on this date. Please choose another date or provider.
+          </div>
+        </section>
+        <section class="booking-panel">
+          <div class="section-heading">
+            <span class="step">3</span>
+            <div>
+              <h2>Tell us about your visit</h2>
+              <p>A short description helps your provider prepare.</p>
+            </div>
+          </div>
+          <label class="field"
+            >Visit type<select [(ngModel)]="visitType">
+              <option value="New">New consultation</option>
+              <option value="Follow-up">Follow-up visit</option>
+            </select></label
+          ><label class="field"
+            >Reason for visit <span class="optional">(optional)</span
+            ><textarea
+              [(ngModel)]="complaint"
+              rows="3"
+              maxlength="2000"
+              placeholder="Briefly describe what you would like to discuss"
+            ></textarea>
+          </label>
+        </section>
+      </div>
+      <aside>
+        <section class="booking-panel summary">
+          <p class="eyebrow">YOUR APPOINTMENT</p>
+          <h2>Review your request</h2>
+          <dl>
+            <div>
+              <dt>Patient</dt>
+              <dd>
+                {{ auth.currentUser()?.name }}<small>{{ auth.currentUser()?.uhid }}</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Provider</dt>
+              <dd>{{ doctor()?.name || 'Choose a provider' }}</dd>
+            </div>
+            <div>
+              <dt>Date</dt>
+              <dd>{{ date() | date: 'EEE, d MMM yyyy' }}</dd>
+            </div>
+            <div>
+              <dt>Time</dt>
+              <dd>{{ slot() ? (slot() | date: 'shortTime') : 'Choose a time' }}</dd>
+            </div>
+            <div>
+              <dt>Visit</dt>
+              <dd>{{ visitType }} consultation</dd>
+            </div>
+          </dl>
+          <div class="approval-note">
+            <strong>Approval comes next</strong>
+            <p>
+              Your hospital will accept or decline the request. A request is not yet a confirmed
+              visit.
+            </p>
+          </div>
+          <p *ngIf="error()" class="error" role="alert">{{ error() }}</p>
+          <button
+            class="primary-button"
+            [disabled]="!doctor() || !slot() || saving()"
+            (click)="submit()"
+          >
+            {{ saving() ? 'Submitting…' : 'Request appointment' }} <span>→</span>
+          </button>
+          <p class="summary-footer">Your request will receive a unique case reference.</p>
+        </section>
+      </aside>
+    </div></ng-template
+  >
+</div>

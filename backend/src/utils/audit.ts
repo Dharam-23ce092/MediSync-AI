@@ -19,6 +19,7 @@ export const logAudit = async (
     }
 
     await AuditLog.create({
+      hospital_id: req.user?.hospital_id,
       timestamp: new Date(),
       userId,
       userName,

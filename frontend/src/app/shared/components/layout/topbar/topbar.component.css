@@ -303,3 +303,5 @@
   font-size: 11px;
   color: var(--color-text-secondary);
 }
+
+@media(max-width:760px){.topbar-center,.profile-preview-wrapper{display:none}.topbar-container{padding:0 12px}.workspace-title{font-size:14px}.logout-btn{font-size:11px;padding:8px}}

@@ -77,7 +77,7 @@
 
 .collapse-toggle:hover {
   background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: var(--color-text-primary);
 }
 
 .collapse-toggle svg {
@@ -213,7 +213,7 @@
 .user-name {
   font-weight: 600;
   font-size: 13px;
-  color: #ffffff;
+  color: var(--color-text-primary);
 }
 
 .user-role {
@@ -229,3 +229,5 @@
   width: 0;
   pointer-events: none;
 }
+
+@media(max-width:760px){.sidebar-container{width:66px!important}.sidebar-container .nav-text,.sidebar-container .user-info,.sidebar-container .logo-text{display:none}.sidebar-container .nav-link{justify-content:center;padding:12px}.sidebar-container .sidebar-header{padding:16px 10px}}

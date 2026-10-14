@@ -20,7 +20,7 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   }
 
-  if (!email || !password) {
+  if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
     return res.status(400).json({
       success: false,
       message: 'Email and password are required',
@@ -38,7 +38,8 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   try {
-    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const userResult = await pool.query('SELECT * FROM users WHERE lower(email) = $1 AND is_active = true', [email.trim().toLowerCase()]);
+
     if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
@@ -48,14 +49,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const user = userResult.rows[0];
-    let isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch && (
-      (user.role === 'pharmacist' && (password === 'pharma_medisync' || password === 'pharmacist_medisync')) ||
-      (password === `${user.role}_medisync`) ||
-      (password === 'medisync123')
-    )) {
-      isMatch = true;
-    }
+    const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -68,7 +62,8 @@ router.post('/login', async (req: Request, res: Response) => {
     let uhid = undefined;
     let hospital_id = user.hospital_id;
     if (user.role === 'patient') {
-      const patientResult = await pool.query('SELECT uhid, hospital_id FROM patients WHERE user_id = $1', [user.id]);
+      const patientResult = await pool.query('SELECT uhid, hospital_id FROM patients WHERE user_id = $1 AND hospital_id = $2', [user.id, user.hospital_id]);
+      if (patientResult.rows.length !== 1) return res.status(403).json({success:false,message:'Patient account is not linked to a patient record. Contact reception.'});
       if (patientResult.rows.length > 0) {
         uhid = patientResult.rows[0].uhid;
         hospital_id = patientResult.rows[0].hospital_id;

@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { BaseCard } from '../../shared/components/base-card/base-card.component';
 import { AuthService } from '../../core/services/auth.service';
 import { LabOrderService } from '../../core/services/lab-order.service';
+import { ConsultationService } from '../../core/services/consultation.service';
 import { PrescriptionService } from '../../core/services/prescription.service';
 
 @Component({
@@ -38,13 +39,21 @@ import { PrescriptionService } from '../../core/services/prescription.service';
         </button>
       </div>
 
+      <a routerLink="/cases">Browse my visit and admission cases →</a>
+      <section *ngIf="activeTab() === 'all'" class="section-block">
+        <app-base-card [border]="true" elevation="sm"><h3 card-header>Consultation history</h3><div card-body>
+          <p *ngIf="consultations.loading()">Loading notes…</p><p role="alert" *ngIf="consultations.error()">{{ consultations.error() }}</p>
+          <article class="rx-report-card" *ngFor="let note of consultations.notes()"><h4>{{ note.diagnosis }}</h4><small>{{ note.createdAt | date:'medium' }}</small><p>{{ note.chiefComplaint }}</p><p style="white-space:pre-wrap">{{ note.clinicalNotes }}</p></article>
+          <p *ngIf="!consultations.loading() && !consultations.notes().length">No consultation notes recorded.</p>
+        </div></app-base-card>
+      </section>
       <!-- Section: Lab Reports -->
       <div class="section-block" *ngIf="activeTab() === 'all' || activeTab() === 'labs'">
         <app-base-card [border]="true" elevation="sm">
           <div card-header class="card-head-row">
             <div>
               <h3 class="sec-title">Laboratory Diagnostic Reports</h3>
-              <p class="sec-sub">Blood chemistry, hematology, and clinical pathology tests performed at Zydus Hospital</p>
+              <p class="sec-sub">Blood chemistry, hematology, and clinical pathology tests recorded by your hospital</p>
             </div>
             <span class="count-pill">{{ myLabReports().length }} Reports</span>
           </div>
@@ -269,6 +278,7 @@ import { PrescriptionService } from '../../core/services/prescription.service';
   `
 })
 export class PatientRecords implements OnInit {
+  protected consultations = inject(ConsultationService);
   protected authService = inject(AuthService);
   protected labService = inject(LabOrderService);
   protected prescriptionService = inject(PrescriptionService);
@@ -277,24 +287,25 @@ export class PatientRecords implements OnInit {
 
   currentUhid = computed(() => {
     const user = this.authService.currentUser();
-    return user?.uhid || 'UHID-2026-981240';
+    return user?.uhid || '';
   });
 
   myLabReports = computed(() => {
     const uhid = this.currentUhid();
     const all = this.labService.labOrders();
-    const filtered = all.filter(o => o.name_subtitle.includes(uhid) || o.name.includes(this.authService.currentUser()?.name || ''));
-    return filtered.length > 0 ? filtered : all;
+    const filtered = all.filter(o => !!uhid && o.name_subtitle === uhid);
+    return filtered;
   });
 
   myPrescriptions = computed(() => {
     const uhid = this.currentUhid();
     const all = this.prescriptionService.prescriptions();
-    const filtered = all.filter(p => p.name_subtitle.includes(uhid) || p.name.includes(this.authService.currentUser()?.name || ''));
-    return filtered.length > 0 ? filtered : all;
+    const filtered = all.filter(p => !!uhid && p.name_subtitle === uhid);
+    return filtered;
   });
 
   ngOnInit() {
+    if (this.currentUhid()) void this.consultations.loadPatientHistory(this.currentUhid());
     void this.labService.loadOrders();
     void this.prescriptionService.loadPrescriptions();
   }

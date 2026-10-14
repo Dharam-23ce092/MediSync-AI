@@ -73,6 +73,7 @@ export class ConsultationService {
     chiefComplaint: string;
     diagnosis: string;
     clinicalNotes: string;
+    medications?: { name: string; dosage: string; duration: string }[];
   }): Promise<ConsultationNote> {
     this.errorSignal.set(null);
 
@@ -84,7 +85,8 @@ export class ConsultationService {
           doctorId: note.doctorId,
           chiefComplaint: note.chiefComplaint,
           diagnosis: note.diagnosis,
-          clinicalNotes: note.clinicalNotes
+          clinicalNotes: note.clinicalNotes,
+          medications: note.medications
         })
       );
 

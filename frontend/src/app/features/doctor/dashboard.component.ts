@@ -451,7 +451,7 @@ export class DoctorDashboard implements OnInit {
   }
 
   goToConsultation(patientId: string) {
-    this.router.navigate(['/doctor/consultation.component', patientId]);
+    this.router.navigate(['/doctor/consultation', patientId]);
   }
 
   goToOpdQueue() {

@@ -96,10 +96,23 @@
 
     <!-- Right Column: Case Timeline Flow -->
     <div class="timeline-column">
+      <div class="clinical-card" style="margin-bottom:24px">
+        <div class="card-header"><h3>Connected records</h3></div>
+        <div class="card-body linked-records">
+          <h4>Appointments</h4>
+          <p *ngFor="let a of caseData()?.appointments">Token {{ a.token }} · {{ a.appointmentTime | date:'medium' }} · {{ a.status }}</p>
+          <p *ngIf="!caseData()?.appointments?.length">No outpatient appointment for this case.</p>
+          <h4>Current bed</h4><p *ngFor="let b of caseData()?.beds">{{ b.name }} · {{ b.type }} · {{ b.status }}</p><p *ngIf="!caseData()?.beds?.length">No current bed assignment.</p>
+          <h4>Consultation notes</h4><div *ngFor="let n of caseData()?.notes"><strong>{{ n.diagnosis }}</strong><p style="white-space:pre-wrap">{{ n.clinicalNotes }}</p></div><p *ngIf="!caseData()?.notes?.length">No consultation note saved.</p>
+          <h4>Prescriptions</h4><p *ngFor="let rx of caseData()?.prescriptions">{{ rx.drugDetails }} · {{ rx.status }}</p><p *ngIf="!caseData()?.prescriptions?.length">No prescriptions issued.</p>
+          <h4>Diagnostics</h4><div *ngFor="let lab of caseData()?.labs"><p>{{ lab.testName }} · {{ lab.specimen }} · {{ lab.status }}</p><pre *ngIf="lab.results">{{ lab.results | json }}</pre></div><p *ngIf="!caseData()?.labs?.length">No lab tests ordered.</p>
+          <h4>Invoices</h4><p *ngFor="let bill of caseData()?.invoices">{{ bill.invoiceNumber }} · {{ bill.status }} · Balance {{ bill.balance | currency:'INR' }}</p><p *ngIf="!caseData()?.invoices?.length">No charges recorded.</p>
+        </div>
+      </div>
       <div class="timeline-card">
         <div class="card-header">
-          <h3>EHR Event Timeline Logs</h3>
-          <p>Chronological trace logs of all receptionist checkout, pharmacy, diagnostic and billing transactions.</p>
+          <h3>Case activity</h3>
+          <p>Appointments, clinical care, pharmacy, diagnostic and billing activity for this case.</p>
         </div>
 
         <div class="card-body">

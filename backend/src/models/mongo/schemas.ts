@@ -13,6 +13,7 @@ export interface IAuditLog extends Document {
 }
 
 const AuditLogSchema: Schema = new Schema({
+  hospital_id: { type: String, index: true },
   timestamp: { type: Date, default: Date.now, index: true },
   userId: { type: String, required: true },
   userName: { type: String, required: true },
@@ -58,6 +59,9 @@ export interface IVitalHistory extends Document {
 }
 
 const VitalHistorySchema: Schema = new Schema({
+  hospital_id: { type: String, index: true },
+  patient_id: { type: String, index: true },
+  case_id: { type: String, index: true },
   uhid: { type: String, required: true, index: true },
   hr: { type: Number, required: true },
   bp: { type: String, required: true },

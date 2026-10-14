@@ -252,7 +252,7 @@ import { PatientStore } from '../../core/stores/patient.store';
 
         <div modal-footer>
           <button class="btn-cancel" (click)="closePayModal()" [disabled]="paySaving()">Cancel</button>
-          <button class="btn-pay" (click)="confirmPay()" [disabled]="paySaving() || !canPay()">
+          <button class="btn-pay"  disabled title="Please contact hospital billing to record payment" (click)="confirmPay()" [disabled]="paySaving() || !canPay()">
             {{ paySaving() ? 'Processing...' : 'Confirm Payment' }}
           </button>
         </div>
@@ -614,7 +614,7 @@ import { PatientStore } from '../../core/stores/patient.store';
     }
     .pay-input:focus {
       border-color: var(--color-primary);
-      background-color: #ffffff;
+      background-color: var(--color-bg-surface);
     }
     .pay-input:disabled {
       opacity: 0.6;
@@ -770,7 +770,7 @@ export class PatientDashboard implements OnInit {
       align: 'center',
       actions: [
         {
-          label: 'Pay',
+          label: 'Payment info',
           action: 'pay',
           class: 'btn-primary',
           tooltip: 'Make payment against this invoice',
@@ -844,7 +844,7 @@ export class PatientDashboard implements OnInit {
         date: o.date,
         testName: o.testName,
         doctor: o.doctor,
-        status: o.results ? 'Normal' : 'Normal'
+        status: 'Completed — review report'
       }));
   });
 
@@ -888,19 +888,19 @@ export class PatientDashboard implements OnInit {
 
   onPrescriptionAction(event: { action: string, row: any }) {
     if (event.action === 'download') {
-      console.log('Prescription download feature pending implementation');
+      this.router.navigate(['/patient/records']);
     }
   }
 
   onReportAction(event: { action: string, row: any }) {
     if (event.action === 'download') {
-      console.log('Lab report download feature pending implementation');
+      this.router.navigate(['/patient/records']);
     }
   }
 
   onInvoiceAction(event: { action: string, row: Invoice }) {
     if (event.action === 'pay') {
-      this.openPayModal(event.row);
+      this.billingError.set('Please contact the hospital billing desk with invoice ' + event.row.invoiceNumber + '. Online payment is not connected.');
     }
   }
 

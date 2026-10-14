@@ -64,3 +64,7 @@ Thumbs.db
 testem.log
 /typings
 __screenshots__/
+
+# Generated local test credentials and retrieval corpus
+/docs/seed/ACCOUNTS.local.md
+/docs/seed/retrieval.local.jsonl

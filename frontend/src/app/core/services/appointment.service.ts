@@ -1,10 +1,15 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, untracked } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from '../config/api.config';
 import { AuthService } from './auth.service';
 
 export interface Appointment {
+  appointmentId: string;
+  caseId?: string;
+  caseNumber?: string;
+  appointmentTime: string;
+  doctorId: string;
   id: string;
   token: string;
   name: string;
@@ -13,17 +18,21 @@ export interface Appointment {
   time: string;
   type: 'New' | 'Follow-up' | 'Emergency';
   waitTime: string;
-  status: 'Waiting' | 'In Consultation' | 'Checked-in' | 'Completed';
+  status: 'Requested' | 'Confirmed' | 'Rejected' | 'Cancelled' | 'Waiting' | 'In Consultation' | 'Checked-in' | 'Completed';
   doctorName: string;
 }
 
 export type BookAppointmentInput = Pick<
   Appointment,
-  'id' | 'name' | 'uhid' | 'time' | 'type' | 'doctorName'
->;
+  'id' | 'name' | 'uhid' | 'time' | 'type' | 'doctorName' | 'doctorId' | 'appointmentTime'
+> & { chiefComplaint?: string };
 
 interface BackendAppointment {
-  appointment_db_id?: string;
+  appointment_db_id: string;
+  caseId?: string;
+  caseNumber?: string;
+  appointmentTime: string;
+  doctorId: string;
   id: string;
   token: string;
   name: string;
@@ -56,6 +65,11 @@ interface AppointmentStatusResponse {
 function mapAppointment(raw: BackendAppointment): Appointment {
   return {
     id: raw.id,
+    appointmentId: raw.appointment_db_id,
+    caseId: raw.caseId,
+    caseNumber: raw.caseNumber,
+    appointmentTime: raw.appointmentTime,
+    doctorId: raw.doctorId,
     token: raw.token,
     name: raw.name,
     name_subtitle: raw.name_subtitle,
@@ -89,9 +103,9 @@ export class AppointmentService {
         const role = this.authService.currentRole();
         const user = this.authService.currentUser();
         if (role === 'doctor' && user?.name) {
-          void this.loadAppointments({ doctorName: user.name });
+          untracked(() => { void this.loadAppointments({ doctorName: user.name }); });
         } else {
-          void this.loadAppointments();
+          untracked(() => { void this.loadAppointments(); });
         }
       } else {
         this.appointmentsSignal.set([]);
@@ -139,7 +153,7 @@ export class AppointmentService {
   }
 
   todaysQueue(doctorName?: string): Appointment[] {
-    const list = this.appointmentsSignal();
+    const list = this.appointmentsSignal().filter(a => new Date(a.appointmentTime).toDateString() === new Date().toDateString() && ['Waiting','Checked-in','In Consultation'].includes(a.status));
     if (doctorName) {
       return list.filter(appt => appt.doctorName === doctorName);
     }
@@ -161,7 +175,10 @@ export class AppointmentService {
           uhid: appt.uhid,
           time: appt.time,
           type: appt.type,
-          doctorName: appt.doctorName
+          doctorName: appt.doctorName,
+          doctorId: appt.doctorId,
+          appointmentTime: appt.appointmentTime,
+          chiefComplaint: appt.chiefComplaint
         })
       );
 
@@ -180,20 +197,28 @@ export class AppointmentService {
   }
 
   async startConsultation(patientId: string): Promise<void> {
-    await this.updateStatus(patientId, 'In Consultation');
+    await this.updateStatus(this.resolveActiveAppointment(patientId), 'In Consultation');
   }
 
   async completeConsultation(patientId: string): Promise<void> {
-    await this.updateStatus(patientId, 'Completed');
+    await this.updateStatus(this.resolveActiveAppointment(patientId), 'Completed');
   }
 
-  private async updateStatus(patientId: string, status: Appointment['status']): Promise<void> {
+  private resolveActiveAppointment(id: string): string {
+    const exact = this.appointmentsSignal().find(a => a.appointmentId === id);
+    if (exact) return exact.appointmentId;
+    const matches = this.todaysQueue().filter(a => a.id === id);
+    if (matches.length !== 1) throw new Error('Select a specific appointment from the queue.');
+    return matches[0].appointmentId;
+  }
+
+  async updateStatus(appointmentId: string, status: Appointment['status']): Promise<void> {
     this.errorSignal.set(null);
 
     try {
       const response = await firstValueFrom(
         this.http.patch<AppointmentStatusResponse>(`${getApiBaseUrl()}/appointments/status`, {
-          patientId,
+          appointmentId,
           status
         })
       );
@@ -204,7 +229,7 @@ export class AppointmentService {
 
       this.appointmentsSignal.update(list =>
         list.map(appt =>
-          appt.id === patientId
+          appt.appointmentId === appointmentId
             ? {
                 ...appt,
                 status,

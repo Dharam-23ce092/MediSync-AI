@@ -64,7 +64,7 @@ export class AuthService {
       patient: '/patient/dashboard.component',
       pharmacist: '/pharmacist/dashboard.component',
       lab: '/lab/dashboard.component',
-      receptionist: '/admin/dashboard.component'
+      receptionist: '/admin/appointments'
     };
     return routes[role];
   }

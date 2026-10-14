@@ -399,3 +399,29 @@ input:focus, select:focus, textarea:focus, .form-control:focus, .form-input:focu
 .timeline-step:nth-child(7) { animation-delay: 0.35s; }
 .timeline-step:nth-child(8) { animation-delay: 0.4s; }
 
+
+/* Native controls follow the active theme, including date pickers and selects. */
+:root { color-scheme: dark; }
+:root.light-theme { color-scheme: light; }
+input, select, textarea { color: var(--color-text-primary); }
+option { background: var(--color-bg-surface); color: var(--color-text-primary); }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+button:disabled { cursor: not-allowed; }
+@media (max-width: 760px) {
+ .booking-layout-grid { grid-template-columns: 1fr !important; }
+ .page-header { flex-wrap: wrap; gap: 12px; }
+}
+:root {
+  --record-viewport-height: clamp(300px, 52dvh, 560px);
+  --dashboard-panel-height: clamp(360px, 55dvh, 580px);
+}
+
+.record-scroll {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.record-scroll:focus-visible { outline-offset: -3px; }
+

@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-14T13:00:27.322Z",
+  "datasetId": "9d827eca-620e-4fb8-9bb4-70fd1efc225d",
+  "accountsVerified": 29,
+  "rolesVerified": 7,
+  "passwordBypassesRejected": true,
+  "patientIsolationVerified": true,
+  "bedsLinked": 4,
+  "ledgerAndStockChecksPassed": true
+}

@@ -33,3 +33,7 @@
   /* Smooth transitions for routing components loading inside */
   animation: fadeIn var(--transition-normal) ease-out;
 }
+
+.main-layout-wrapper{min-width:0;}
+.content-viewport{padding:28px 32px;}
+@media(max-width:700px){.content-viewport{padding:18px 14px;}}
